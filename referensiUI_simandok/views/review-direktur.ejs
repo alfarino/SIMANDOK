@@ -1,0 +1,187 @@
+<div class="w-full">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold mb-2" style="color: #262626">Review Dokumen - Direktur</h1>
+        <p class="text-gray-600">Dokumen yang memerlukan persetujuan Anda sebagai Direktur</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <!-- Total Dokumen Perlu Review -->
+        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-xl p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm opacity-90 mb-1">Perlu Direview</p>
+                    <h3 class="text-4xl font-bold"><%= documents.length %></h3>
+                    <p class="text-xs opacity-80 mt-1">Total dokumen</p>
+                </div>
+                <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Belum Dilihat -->
+        <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-xl p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm opacity-90 mb-1">Belum Dilihat</p>
+                    <h3 class="text-4xl font-bold"><%= pendingDocs.length %></h3>
+                    <p class="text-xs opacity-80 mt-1">Dokumen baru</p>
+                </div>
+                <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Sedang Direview -->
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-xl p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm opacity-90 mb-1">Sedang Direview</p>
+                    <h3 class="text-4xl font-bold"><%= reviewingDocs.length %></h3>
+                    <p class="text-xs opacity-80 mt-1">Dalam proses</p>
+                </div>
+                <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="bg-white rounded-xl shadow-md p-4 mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center space-x-4">
+                <label class="text-sm font-medium text-gray-700">Status:</label>
+                <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <option value="all">Semua Status</option>
+                    <option value="unviewed">Belum Dilihat</option>
+                    <option value="reviewing">Sedang Direview</option>
+                </select>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Cari dokumen..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent w-full md:w-64" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents Table -->
+    <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead style="background-color: #00341f">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">No</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Judul Dokumen</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Dibuat Oleh</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Tanggal</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Status Review</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <% if (documents.length === 0) { %>
+                    <tr>
+                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p class="text-lg font-medium">Tidak ada dokumen yang perlu direview</p>
+                            <p class="text-sm">Semua dokumen sudah diproses</p>
+                        </td>
+                    </tr>
+                    <% } else { %> <% documents.forEach((doc, index) => { %>
+                    <tr
+                        class="hover:bg-gray-50 transition document-row"
+                        data-status="<%= doc.workflow.direktur.viewed ? 'reviewing' : 'unviewed' %>"
+                        data-title="<%= doc.title.toLowerCase() %>"
+                        data-creator="<%= doc.createdBy.toLowerCase() %>">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= index + 1 %></td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900"><%= doc.title %></div>
+                            <div class="text-sm text-gray-500"><%= doc.description.substring(0, 60) %>...</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"><%= doc.createdBy %></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"><%= doc.createdAt %></td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <% if (!doc.workflow.direktur.viewed) { %>
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path>
+                                </svg>
+                                Belum Dilihat
+                            </span>
+                            <% } else { %>
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                </svg>
+                                Sedang Direview
+                            </span>
+                            <% } %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <a
+                                href="/documents/<%= doc.id %>/review"
+                                class="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium transition"
+                                style="background-color: #00341f"
+                                onmouseover="this.style.opacity='0.9'"
+                                onmouseout="this.style.opacity='1'">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                Review
+                            </a>
+                        </td>
+                    </tr>
+                    <% }); %> <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Filter dan Search
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+    const rows = document.querySelectorAll('.document-row');
+
+    function filterDocuments() {
+        const statusValue = statusFilter.value;
+        const searchValue = searchInput.value.toLowerCase().trim();
+
+        rows.forEach((row) => {
+            const status = row.getAttribute('data-status');
+            const title = row.getAttribute('data-title');
+            const creator = row.getAttribute('data-creator');
+
+            const matchesStatus = statusValue === 'all' || status === statusValue;
+            const matchesSearch = searchValue === '' || title.includes(searchValue) || creator.includes(searchValue);
+
+            if (matchesStatus && matchesSearch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    statusFilter.addEventListener('change', filterDocuments);
+    searchInput.addEventListener('input', filterDocuments);
+</script>

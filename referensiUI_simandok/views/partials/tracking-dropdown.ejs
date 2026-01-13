@@ -1,0 +1,145 @@
+<div class="relative tracking-container inline-block">
+    <button class="tracking-btn text-gray-600 p-2 rounded-full transition hover:bg-opacity-10" style="color: #00341f" title="Lihat Status Progress">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+        </svg>
+    </button>
+
+    <!-- Dropdown -->
+    <div class="tracking-dropdown hidden absolute left-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50" style="transform: translateX(-85%)">
+        <div style="background-color: #00341f" class="text-white px-4 py-3 rounded-t-lg">
+            <h3 class="font-semibold">Progress Dokumen</h3>
+        </div>
+        <div class="p-4">
+            <!-- Kasi -->
+            <div class="border-b border-gray-200 pb-3 mb-3">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 mr-3">
+                        <% if (doc.workflow.kasi.status === 'approved') { %>
+                        <div style="background-color: #00341f" class="w-10 h-10 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <% } else if (doc.workflow.kasi.status === 'reviewing') { %>
+                        <div style="background-color: #f0d323" class="w-10 h-10 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5" style="color: #262626" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <% } else { %>
+                        <div class="w-10 h-10 bg-gray-300 rounded-full"></div>
+                        <% } %>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-900">Kepala Seksi</p>
+                        <p class="text-xs text-gray-600 mt-0.5"><%= reviewers[0].name %></p>
+                        <% if (doc.workflow.kasi.status === 'approved') { %>
+                        <div class="mt-1">
+                            <p class="text-xs font-medium" style="color: #00341f">✓ Disetujui</p>
+                            <% if (doc.workflow.kasi.date) { %>
+                            <p class="text-xs text-gray-500"><%= doc.workflow.kasi.date %></p>
+                            <% } %> <% if (doc.workflow.kasi.notes) { %>
+                            <p class="text-xs text-gray-600 mt-1 italic break-words">"<%= doc.workflow.kasi.notes %>"</p>
+                            <% } %>
+                        </div>
+                        <% } else if (doc.workflow.kasi.status === 'reviewing') { %>
+                        <p class="text-xs font-medium mt-1" style="color: #f0d323">⏳ Sedang direview</p>
+                        <% } else { %>
+                        <p class="text-xs text-gray-500 mt-1">Menunggu</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kasubdit -->
+            <div class="border-b border-gray-200 pb-3 mb-3">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 mr-3">
+                        <% if (doc.workflow.kasubdit.status === 'approved') { %>
+                        <div style="background-color: #00341f" class="w-10 h-10 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <% } else if (doc.workflow.kasubdit.status === 'reviewing') { %>
+                        <div style="background-color: #f0d323" class="w-10 h-10 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5" style="color: #262626" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <% } else { %>
+                        <div class="w-10 h-10 bg-gray-300 rounded-full"></div>
+                        <% } %>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-900">Kepala Subdit</p>
+                        <p class="text-xs text-gray-600 mt-0.5"><%= reviewers[1].name %></p>
+                        <% if (doc.workflow.kasubdit.status === 'approved') { %>
+                        <div class="mt-1">
+                            <p class="text-xs font-medium" style="color: #00341f">✓ Disetujui</p>
+                            <% if (doc.workflow.kasubdit.date) { %>
+                            <p class="text-xs text-gray-500"><%= doc.workflow.kasubdit.date %></p>
+                            <% } %> <% if (doc.workflow.kasubdit.notes) { %>
+                            <p class="text-xs text-gray-600 mt-1 italic break-words">"<%= doc.workflow.kasubdit.notes %>"</p>
+                            <% } %>
+                        </div>
+                        <% } else if (doc.workflow.kasubdit.status === 'reviewing') { %>
+                        <p class="text-xs font-medium mt-1" style="color: #f0d323">⏳ Sedang direview</p>
+                        <% } else { %>
+                        <p class="text-xs text-gray-500 mt-1">Menunggu</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direktur -->
+            <div>
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 mr-3">
+                        <% if (doc.workflow.direktur.status === 'approved') { %>
+                        <div style="background-color: #00341f" class="w-10 h-10 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <% } else if (doc.workflow.direktur.status === 'reviewing') { %>
+                        <div style="background-color: #f0d323" class="w-10 h-10 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5" style="color: #262626" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <% } else { %>
+                        <div class="w-10 h-10 bg-gray-300 rounded-full"></div>
+                        <% } %>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-900">Direktur</p>
+                        <p class="text-xs text-gray-600 mt-0.5"><%= reviewers[2].name %></p>
+                        <% if (doc.workflow.direktur.status === 'approved') { %>
+                        <div class="mt-1">
+                            <p class="text-xs font-medium" style="color: #00341f">✓ Disetujui</p>
+                            <% if (doc.workflow.direktur.date) { %>
+                            <p class="text-xs text-gray-500"><%= doc.workflow.direktur.date %></p>
+                            <% } %> <% if (doc.workflow.direktur.notes) { %>
+                            <p class="text-xs text-gray-600 mt-1 italic break-words">"<%= doc.workflow.direktur.notes %>"</p>
+                            <% } %>
+                        </div>
+                        <% } else if (doc.workflow.direktur.status === 'reviewing') { %>
+                        <p class="text-xs font-medium mt-1" style="color: #f0d323">⏳ Sedang direview</p>
+                        <% } else { %>
+                        <p class="text-xs text-gray-500 mt-1">Menunggu</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <% if (doc.currentStatus === 'approved') { %>
+        <div style="background-color: rgba(0, 52, 31, 0.1)" class="border-t px-4 py-3 rounded-b-lg">
+            <p class="text-xs text-center font-medium" style="color: #00341f">✓ Dokumen telah disetujui semua pihak</p>
+        </div>
+        <% } %>
+    </div>
+</div>

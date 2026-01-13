@@ -1,0 +1,159 @@
+<div class="w-full mx-auto px-2 py-6">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold" style="color: #262626">Pengajuan Dokumen Baru</h1>
+            <p class="text-gray-600 mt-2">Lengkapi form di bawah untuk mengajukan dokumen baru</p>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Form Header -->
+            <div class="px-6 py-4" style="background-color: #00341f">
+                <h2 class="text-lg font-semibold text-white">Informasi Dokumen</h2>
+            </div>
+
+            <!-- Form Body -->
+            <form id="documentForm" class="p-6 space-y-6" enctype="multipart/form-data">
+                <!-- Judul Dokumen -->
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-700 mb-2"> Judul Dokumen <span class="text-red-500">*</span> </label>
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                        style="focus:ring-color: #00341F"
+                        placeholder="Masukkan judul dokumen" />
+                    <p class="mt-1 text-xs text-gray-500">Contoh: Proposal Pengadaan Komputer, Laporan Bulanan, dll.</p>
+                </div>
+
+                <!-- Deskripsi -->
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2"> Deskripsi <span class="text-red-500">*</span> </label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        required
+                        rows="4"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent resize-none"
+                        style="focus:ring-color: #00341F"
+                        placeholder="Jelaskan secara singkat tentang dokumen ini"></textarea>
+                    <p class="mt-1 text-xs text-gray-500">Berikan penjelasan yang jelas mengenai isi dan tujuan dokumen</p>
+                </div>
+
+                <!-- Link Dokumen -->
+                <div>
+                    <label for="documentLink" class="block text-sm font-medium text-gray-700 mb-2"> Link Dokumen <span class="text-red-500">*</span> </label>
+                    <input
+                        type="url"
+                        id="documentLink"
+                        name="documentLink"
+                        required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                        style="focus:ring-color: #00341F"
+                        placeholder="https://docs.google.com/document/d/... atau https://onedrive.live.com/..." />
+                    <p class="mt-1 text-xs text-gray-500">Masukkan link dokumen dari Google Docs atau OneDrive. Pastikan dokumen dapat diakses oleh reviewer.</p>
+                    <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div class="text-xs text-blue-800">
+                                <p class="font-semibold mb-1">Tips menggunakan link dokumen:</p>
+                                <ul class="list-disc ml-4 space-y-1">
+                                    <li>Pastikan setting "Anyone with the link can comment/edit"</li>
+                                    <li>Reviewer dapat memberikan komentar langsung di dokumen</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pilih Reviewer -->
+                <!-- Informasi Alur Review -->
+                <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mt-0.5 mr-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-blue-900 mb-1">Alur Review Dokumen</h4>
+                            <p class="text-xs text-blue-700 mb-2">Dokumen akan melalui proses review tetap:</p>
+                            <ul class="text-xs text-blue-700 space-y-1 ml-4 list-disc">
+                                <li>Tahap 1: Kepala Seksi Penjajakan, Penelaahan & Monev Kerja Sama (<%= reviewers[0].name %>)</li>
+                                <li>Tahap 2: Kepala Subdit Kerja Sama (<%= reviewers[1].name %>)</li>
+                                <li>Tahap 3: Direktur Kerja Sama dan Hilirisasi Riset (<%= reviewers[2].name %>)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+                    <a href="/" class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition"> Batal </a>
+                    <button type="submit" class="px-6 py-2.5 text-white rounded-lg font-medium transition hover:opacity-90" style="background-color: #00341f">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Ajukan Dokumen
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Form submit handler
+    document.getElementById('documentForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        // Collect form data
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const documentLink = document.getElementById('documentLink').value;
+
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+
+        // Loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML =
+            '<span class="flex items-center"><svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Mengajukan...</span>';
+
+        try {
+            const response = await fetch('/api/documents', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: title,
+                    description: description,
+                    documentLink: documentLink,
+                }),
+            });
+
+            const result = await response.json();
+            const result = await response.json();
+
+            if (result.success) {
+                // Show success message
+                alert('Dokumen berhasil diajukan!');
+                // Redirect to dashboard
+                window.location.href = '/';
+            } else {
+                alert('Gagal mengajukan dokumen: ' + (result.message || 'Terjadi kesalahan'));
+            }
+        } catch (error) {
+            alert('Terjadi kesalahan: ' + error.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
+    });
+</script>

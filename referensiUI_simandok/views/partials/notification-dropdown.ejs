@@ -1,0 +1,131 @@
+<!-- Notification Dropdown Component -->
+<div class="relative notification-container w-full">
+    <button id="notificationBtn" class="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+        <div class="flex items-center space-x-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+            <span class="font-medium">Notifikasi</span>
+        </div>
+        <% if (notifications && notifications.length > 0) { %>
+        <span class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white rounded-full" style="background-color: #f0d323; color: #262626"> <%= notifications.length %> </span>
+        <% } %>
+    </button>
+
+    <!-- Dropdown Card -->
+    <div id="notificationDropdown" class="hidden absolute left-full bottom-0 ml-4 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
+        <!-- Header -->
+        <div class="px-4 py-3 border-b border-gray-200" style="background-color: #00341f">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-white">Notifikasi</h3>
+                <% if (notifications && notifications.length > 0) { %>
+                <span class="text-xs px-2 py-1 rounded-full" style="background-color: #f0d323; color: #262626"> <%= notifications.length %> Baru </span>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Notification List -->
+        <div class="max-h-96 overflow-y-auto">
+            <% if (!notifications || notifications.length === 0) { %>
+            <!-- Empty State -->
+            <div class="px-4 py-8 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                </svg>
+                <p class="mt-2 text-sm text-gray-500">Tidak ada notifikasi</p>
+            </div>
+            <% } else { %>
+            <!-- Notification Items -->
+            <% notifications.forEach((notif, index) => { %>
+            <div class="px-4 py-3 hover:bg-gray-50 transition border-b border-gray-100 <%= notif.read ? '' : 'bg-blue-50' %>">
+                <div class="flex items-start space-x-3">
+                    <!-- Icon -->
+                    <div class="flex-shrink-0">
+                        <% if (notif.type === 'approved') { %>
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: rgba(0, 52, 31, 0.1)">
+                            <svg class="w-5 h-5" style="color: #00341f" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <% } else if (notif.type === 'revision') { %>
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-orange-100">
+                            <svg class="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                            </svg>
+                        </div>
+                        <% } else if (notif.type === 'reviewing') { %>
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: rgba(240, 211, 35, 0.2)">
+                            <svg class="w-5 h-5" style="color: #262626" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <% } else { %>
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100">
+                            <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <% } %>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900"><%= notif.title %></p>
+                        <p class="text-xs text-gray-600 mt-1"><%= notif.message %></p>
+                        <div class="flex items-center justify-between mt-2">
+                            <p class="text-xs text-gray-500"><%= notif.time %></p>
+                            <% if (notif.documentId) { %>
+                            <a href="/documents/<%= notif.documentId %>/review" class="text-xs font-medium hover:underline" style="color: #00341f"> Lihat Detail → </a>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Unread Indicator -->
+                    <% if (!notif.read) { %>
+                    <div class="flex-shrink-0">
+                        <span class="inline-block w-2 h-2 rounded-full" style="background-color: #f0d323"></span>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+            <% }) %> <% } %>
+        </div>
+
+        <!-- Footer -->
+        <% if (notifications && notifications.length > 0) { %>
+        <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+            <button class="text-xs font-medium text-center w-full hover:underline" style="color: #00341f">Tandai Semua Sudah Dibaca</button>
+        </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- JavaScript for Notification Dropdown -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+
+        if (notificationBtn && notificationDropdown) {
+            notificationBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle('hidden');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!notificationDropdown.contains(e.target) && e.target !== notificationBtn) {
+                    notificationDropdown.classList.add('hidden');
+                }
+            });
+        }
+    });
+</script>

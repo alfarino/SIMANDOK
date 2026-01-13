@@ -1,0 +1,73 @@
+<!-- Filter and Search Script Component -->
+<script>
+    (function () {
+        const statusFilterBtn = document.getElementById('statusFilterBtn');
+        const statusFilterDropdown = document.getElementById('statusFilterDropdown');
+        const statusFilterOptions = document.querySelectorAll('.status-filter-option');
+        const searchInput = document.getElementById('searchInput');
+        const documentRows = document.querySelectorAll('.document-row');
+        const noResults = document.getElementById('noResults');
+
+        if (!statusFilterBtn || !searchInput) return;
+
+        let currentStatusFilter = 'all';
+
+        // Toggle dropdown
+        statusFilterBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            statusFilterDropdown.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (e) {
+            if (statusFilterDropdown && !statusFilterDropdown.contains(e.target) && e.target !== statusFilterBtn) {
+                statusFilterDropdown.classList.add('hidden');
+            }
+        });
+
+        // Handle filter option click
+        statusFilterOptions.forEach((option) => {
+            option.addEventListener('click', function (e) {
+                e.stopPropagation();
+                currentStatusFilter = this.getAttribute('data-status');
+
+                // Visual feedback
+                statusFilterOptions.forEach((opt) => opt.classList.remove('bg-gray-100'));
+                this.classList.add('bg-gray-100');
+
+                statusFilterDropdown.classList.add('hidden');
+                filterDocuments();
+            });
+        });
+
+        function filterDocuments() {
+            const searchValue = searchInput.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            documentRows.forEach((row) => {
+                const rowStatus = row.getAttribute('data-status');
+                const rowTitle = row.getAttribute('data-title');
+                const rowDescription = row.getAttribute('data-description');
+
+                const statusMatch = currentStatusFilter === 'all' || rowStatus === currentStatusFilter;
+                const searchMatch = searchValue === '' || rowTitle.includes(searchValue) || rowDescription.includes(searchValue);
+
+                if (statusMatch && searchMatch) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (noResults) {
+                noResults.classList.toggle('hidden', visibleCount > 0);
+            }
+        }
+
+        searchInput.addEventListener('input', filterDocuments);
+        if (statusFilterOptions[0]) {
+            statusFilterOptions[0].classList.add('bg-gray-100');
+        }
+    })();
+</script>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title><%= title %> - Sistem Pemantauan Dokumen</title>
+
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <!-- Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/style.css" />
+
+        <style>
+            /* Prevent all scrolling in fullscreen */
+            :fullscreen,
+            :fullscreen html,
+            :fullscreen body {
+                overflow: hidden !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            :-webkit-full-screen,
+            :-webkit-full-screen html,
+            :-webkit-full-screen body {
+                overflow: hidden !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            :-moz-full-screen,
+            :-moz-full-screen html,
+            :-moz-full-screen body {
+                overflow: hidden !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Hide sidebar in fullscreen */
+            :fullscreen #sidebar,
+            :-webkit-full-screen #sidebar,
+            :-moz-full-screen #sidebar {
+                display: none !important;
+            }
+
+            /* Expand main content in fullscreen */
+            :fullscreen #mainContent,
+            :-webkit-full-screen #mainContent,
+            :-moz-full-screen #mainContent {
+                margin-left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                overflow: hidden !important;
+            }
+
+            /* Hide footer in fullscreen */
+            :fullscreen footer,
+            :-webkit-full-screen footer,
+            :-moz-full-screen footer {
+                display: none !important;
+            }
+        </style>
+    </head>
+    <body class="h-full" style="background-color: #f2f2f2">
+        <div class="flex h-full">
+            <!-- Sidebar -->
+            <aside id="sidebar" style="background-color: #00341f" class="w-64 min-h-screen text-white flex flex-col fixed left-0 top-0 bottom-0 shadow-2xl z-50">
+                <!-- Logo -->
+                <div class="p-6 border-b border-opacity-20 border-white">
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <div>
+                            <h1 class="font-bold text-base leading-tight">Sistem Pemantauan</h1>
+                            <p class="text-xs opacity-80">Dokumen MoU</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="flex-1 px-4 py-6 space-y-2">
+                    <a href="/" class="flex items-center space-x-3 px-4 py-3 rounded-lg <%= activePage === 'dashboard' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' %> transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+
+                    <a href="/documents" class="flex items-center space-x-3 px-4 py-3 rounded-lg <%= activePage === 'documents' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' %> transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span class="font-medium">Daftar Dokumen</span>
+                    </a>
+
+                    <% if (user.role === 'kasi') { %>
+                    <a href="/review/kasi" class="flex items-center space-x-3 px-4 py-3 rounded-lg <%= activePage === 'review-kasi' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' %> transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        <span class="font-medium">Review Kasi</span>
+                    </a>
+                    <% } %> <% if (user.role === 'kasubdit') { %>
+                    <a href="/review/kasubdit" class="flex items-center space-x-3 px-4 py-3 rounded-lg <%= activePage === 'review-kasubdit' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' %> transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        <span class="font-medium">Review Kasubdit</span>
+                    </a>
+                    <% } %> <% if (user.role === 'direktur') { %>
+                    <a href="/review/direktur" class="flex items-center space-x-3 px-4 py-3 rounded-lg <%= activePage === 'review-direktur' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' %> transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        <span class="font-medium">Review Direktur</span>
+                    </a>
+                    <% } %> <% if (user.role === 'staff') { %>
+                    <a href="/documents/new" class="flex items-center space-x-3 px-4 py-3 rounded-lg <%= activePage === 'new-document' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10' %> transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span class="font-medium">Pengajuan Baru</span>
+                    </a>
+                    <% } %>
+                </nav>
+
+                <!-- User Section at Bottom -->
+                <div class="border-t border-opacity-20 border-white p-4">
+                    <!-- Notification Component -->
+                    <div class="mb-3"><%- include('partials/notification-dropdown') %></div>
+
+                    <!-- User Profile -->
+                    <div class="relative group">
+                        <button class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 transition">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+                            </svg>
+                            <div class="flex-1 text-left">
+                                <p class="text-sm font-medium"><%= user.name %></p>
+                                <p class="text-xs opacity-70"><%= user.role.toUpperCase() %></p>
+                            </div>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+
+                        <div class="absolute bottom-full left-0 mb-2 w-full bg-white rounded-lg shadow-lg py-1 hidden group-hover:block">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
+                            <div class="border-t border-gray-100"></div>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main id="mainContent" class="flex-1 ml-64 min-h-screen flex flex-col">
+                <div class="flex-1 p-6"><%- body %></div>
+
+                <!-- Footer -->
+                <footer class="bg-white border-t border-gray-200 mt-auto">
+                    <div class="px-6 py-4 text-center">
+                        <p class="text-sm text-gray-600">&copy; 2026 Sistem Pemantauan Dokumen - Kantor</p>
+                    </div>
+                </footer>
+            </main>
+        </div>
+
+        <!-- Custom JS -->
+        <script src="/js/main.js"></script>
+    </body>
+</html>

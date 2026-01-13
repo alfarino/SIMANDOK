@@ -1,0 +1,29 @@
+/* ================================
+   Custom Styles - Sistem Pemantauan Dokumen (Tailwind)
+   ================================ */
+
+/* Tracking Dropdown Styles */
+.tracking-dropdown {
+    display: none;
+}
+
+.tracking-dropdown.show {
+    display: block;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Smooth transitions */
+* {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}

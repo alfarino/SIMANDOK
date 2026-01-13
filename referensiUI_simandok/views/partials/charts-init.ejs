@@ -1,0 +1,105 @@
+<!-- Chart Initialization Script -->
+<script>
+    (function() {
+        const workflowChartEl = document.getElementById('workflowChart');
+        const statusChartEl = document.getElementById('statusChart');
+
+        if (!workflowChartEl || !statusChartEl) return;
+
+        // Workflow Stage Distribution Chart
+        const workflowCtx = workflowChartEl.getContext('2d');
+        new Chart(workflowCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Kepala Seksi', 'Kepala Subdit', 'Direktur'],
+                datasets: [{
+                    label: 'Dokumen Sedang Direview',
+                    data: [<%= reviewerWorkload.kasi.count %>, <%= reviewerWorkload.kasubdit.count %>, <%= reviewerWorkload.direktur.count %>],
+                    backgroundColor: ['#1f3a5f', '#5b4b8a', '#c45a2a'],
+                    borderColor: ['#152944', '#463a6b', '#9d4721'],
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#262626',
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 },
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, font: { size: 12 } },
+                        grid: { color: '#e5e7eb' }
+                    },
+                    x: {
+                        ticks: { font: { size: 11 } },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // Status & Reviewer Distribution Chart
+        const statusCtx = statusChartEl.getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Direview Kasi', 'Direview Kasubdit', 'Direview Direktur', 'Selesai', 'Perlu Revisi'],
+                datasets: [{
+                    data: [
+                        <%= reviewerWorkload.kasi.count %>,
+                        <%= reviewerWorkload.kasubdit.count %>,
+                        <%= reviewerWorkload.direktur.count %>,
+                        <%= approvedDocs %>,
+                        <%= documents.filter(d => d.currentStatus === 'rejected').length %>
+                    ],
+                    backgroundColor: ['#1f3a5f', '#5b4b8a', '#c45a2a', '#00341f', '#f97316'],
+                    borderColor: ['#ffffff', '#ffffff', '#ffffff', '#ffffff', '#ffffff'],
+                    borderWidth: 3,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            font: { size: 12 },
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#262626',
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return label + ': ' + value + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    })();
+</script>
