@@ -9,8 +9,10 @@ async function startServer() {
         await sequelize.authenticate();
         console.log('✅ Database connected successfully');
 
-        // Sync models (in development only)
-        if (process.env.NODE_ENV === 'development') {
+        // Sync models ONLY if explicitly requested (first time setup)
+        // Set SYNC_DB=true in .env to run sync
+        if (process.env.SYNC_DB === 'true') {
+            console.log('⏳ Syncing database schema...');
             await sequelize.sync({ alter: true });
             console.log('✅ Database synced');
         }

@@ -1,25 +1,22 @@
 import { Router } from 'express';
+import NotificationController from '../controllers/NotificationController';
+import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = Router();
 
+// All routes require authentication
+router.use(authMiddleware);
+
 // GET /api/notifications
-router.get('/', (req, res) => {
-    res.json({ message: 'List notifications - TODO' });
-});
+router.get('/', NotificationController.getAll);
 
 // GET /api/notifications/unread-count
-router.get('/unread-count', (req, res) => {
-    res.json({ unreadCount: 0 });
-});
+router.get('/unread-count', NotificationController.getUnreadCount);
 
 // PUT /api/notifications/:id/read
-router.put('/:id/read', (req, res) => {
-    res.json({ message: 'Mark as read - TODO' });
-});
+router.put('/:id/read', NotificationController.markAsRead);
 
 // PUT /api/notifications/read-all
-router.put('/read-all', (req, res) => {
-    res.json({ message: 'Mark all as read - TODO' });
-});
+router.put('/read-all', NotificationController.markAllAsRead);
 
 export default router;

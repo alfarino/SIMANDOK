@@ -1,0 +1,51 @@
+import { Request, Response, NextFunction } from 'express';
+import DocumentService from '../services/DocumentService';
+
+class DashboardController {
+    async getSummary(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user?.userId;
+            const summary = await DocumentService.getDashboardSummary(userId);
+
+            res.json({
+                success: true,
+                data: summary
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getPending(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.userId;
+            const documents = await DocumentService.getPendingForApprover(userId);
+
+            res.json({
+                success: true,
+                data: documents
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getRecent(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.userId;
+            const documents = await DocumentService.findAll({ uploadedBy: userId });
+
+            // Get only 10 most recent
+            const recent = documents.slice(0, 10);
+
+            res.json({
+                success: true,
+                data: recent
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+}
+
+export default new DashboardController();

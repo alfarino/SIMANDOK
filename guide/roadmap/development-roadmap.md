@@ -62,10 +62,10 @@ Semua 10 file dokumentasi sudah sinkron dengan design baru:
 | `dev-guide-approval.md` | Key Services |
 
 **Task:**
-- [ ] ApprovalService (approve, reject, next)
-- [ ] Document Approvers (multi-select, auto-sort)
-- [ ] NotificationService (in-app only!)
-- [ ] ApprovalHistory (audit trail)
+- [x] ApprovalService (approve, reject, next)
+- [x] Document Approvers (multi-select, auto-sort)
+- [x] NotificationService (in-app only!)
+- [x] ApprovalHistory (audit trail)
 
 ---
 
@@ -79,10 +79,10 @@ Semua 10 file dokumentasi sudah sinkron dengan design baru:
 | `visual-reference.md` | Section 8: Email Template |
 
 **Task:**
-- [ ] EmailReminderService (batch only!)
-- [ ] Cron job (auto daily reminder)
-- [ ] ArchiveService
-- [ ] AuditService
+- [x] EmailReminderService (batch only!)
+- [x] Cron job (auto daily reminder)
+- [x] ArchiveService
+- [x] AuditService
 
 ---
 
