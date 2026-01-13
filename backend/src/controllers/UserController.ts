@@ -27,40 +27,23 @@ class UserController {
         }
     }
 
-    async getApprovers(req: Request, res: Response, next: NextFunction) {
+    async create(req: Request, res: Response, next: NextFunction) {
         try {
-            const approvers = await UserService.getApprovers();
+            const { username, email, password, fullName, roleId, team, phone } = req.body;
 
-            // Group by role level
-            const grouped = approvers.reduce((acc, user) => {
-                const roleCode = user.role?.role_code || 'A';
-                if (!acc[roleCode]) acc[roleCode] = [];
-                acc[roleCode].push({
-                    id: user.id,
-                    fullName: user.full_name,
-                    email: user.email,
-                    team: user.team,
-                    role: user.role ? {
-                        id: user.role.id,
-                        name: user.role.role_name,
-                        code: user.role.role_code,
-                        hierarchyLevel: user.role.hierarchy_level
-                    } : null
-                });
-                return acc;
-            }, {} as Record<string, any[]>);
+            const user = await UserService.create({
+                username,
+                email,
+                password,
+                fullName,
+                roleId,
+                team,
+                phone
+            });
 
-            res.json({
+            res.status(201).json({
                 success: true,
-                data: {
-                    grouped,
-                    list: approvers.map(u => ({
-                        id: u.id,
-                        fullName: u.full_name,
-                        roleCode: u.role?.role_code,
-                        hierarchyLevel: u.role?.hierarchy_level
-                    }))
-                }
+                data: user
             });
         } catch (error) {
             next(error);
@@ -74,6 +57,55 @@ class UserController {
             res.json({
                 success: true,
                 data: user
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const result = await UserService.delete(parseInt(id));
+            res.json({
+                success: true,
+                ...result
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getRoles(req: Request, res: Response, next: NextFunction) {
+        try {
+            const roles = await UserService.getRoles();
+            res.json({
+                success: true,
+                data: roles
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getApprovers(req: Request, res: Response, next: NextFunction) {
+        try {
+            const approvers = await UserService.getApprovers();
+
+            res.json({
+                success: true,
+                data: approvers.map(u => ({
+                    id: u.id,
+                    full_name: u.full_name,
+                    email: u.email,
+                    team: u.team,
+                    role: u.role ? {
+                        id: u.role.id,
+                        role_name: u.role.role_name,
+                        role_code: u.role.role_code,
+                        hierarchy_level: u.role.hierarchy_level
+                    } : null
+                }))
             });
         } catch (error) {
             next(error);

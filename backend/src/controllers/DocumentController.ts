@@ -35,8 +35,11 @@ class DocumentController {
 
     async create(req: Request, res: Response, next: NextFunction) {
         try {
-            const { documentName, description, documentLink, approverIds } = req.body;
+            const { documentName, documentDescription, description, documentLink, approverIds } = req.body;
             const uploadedByUserId = req.user!.userId;
+
+            // Support both 'description' and 'documentDescription'
+            const desc = documentDescription || description;
 
             if (!documentName) {
                 return res.status(400).json({
@@ -52,19 +55,12 @@ class DocumentController {
                 });
             }
 
-            if (!approverIds || approverIds.length === 0) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Minimal pilih 1 approver'
-                });
-            }
-
             const result = await DocumentService.create({
                 documentName,
-                description,
+                description: desc,
                 documentLink,
                 uploadedByUserId,
-                approverIds
+                approverIds: approverIds || []
             });
 
             res.status(201).json({

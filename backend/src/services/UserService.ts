@@ -1,12 +1,24 @@
 import User from '../entities/User';
 import Role from '../entities/Role';
 import { AppError } from '../middleware/error.middleware';
+import bcrypt from 'bcryptjs';
+
+interface CreateUserDTO {
+    username: string;
+    email: string;
+    password: string;
+    fullName: string;
+    roleId: number;
+    team?: string;
+    phone?: string;
+}
 
 class UserService {
     async findAll() {
         return User.findAll({
             include: [{ model: Role, as: 'role' }],
-            attributes: { exclude: ['password_hash'] }
+            attributes: { exclude: ['password_hash'] },
+            order: [['id', 'ASC']]
         });
     }
 
@@ -27,6 +39,45 @@ class UserService {
         return User.findOne({
             where: { email },
             include: [{ model: Role, as: 'role' }]
+        });
+    }
+
+    async create(data: CreateUserDTO) {
+        // Check for duplicate email
+        const existing = await User.findOne({ where: { email: data.email } });
+        if (existing) {
+            throw new AppError('Email sudah digunakan', 400, 'DUPLICATE_EMAIL');
+        }
+
+        // Hash password
+        const passwordHash = await bcrypt.hash(data.password, 10);
+
+        const user = await User.create({
+            username: data.username,
+            email: data.email,
+            password_hash: passwordHash,
+            full_name: data.fullName,
+            role_id: data.roleId,
+            team: data.team,
+            phone: data.phone,
+            is_active: true
+        });
+
+        return this.findById(user.id);
+    }
+
+    async delete(id: number) {
+        const user = await this.findById(id);
+
+        // Soft delete - just deactivate
+        await user.update({ is_active: false });
+
+        return { message: 'User berhasil dinonaktifkan' };
+    }
+
+    async getRoles() {
+        return Role.findAll({
+            order: [['hierarchy_level', 'ASC']]
         });
     }
 
@@ -64,11 +115,19 @@ class UserService {
         });
     }
 
-    async update(id: number, data: Partial<User>) {
+    async update(id: number, data: Partial<User> & { password?: string }) {
         const user = await this.findById(id);
+
+        // If password is being updated, hash it
+        if (data.password) {
+            (data as any).password_hash = await bcrypt.hash(data.password, 10);
+            delete data.password;
+        }
+
         await user.update(data);
         return this.findById(id);
     }
 }
 
 export default new UserService();
+

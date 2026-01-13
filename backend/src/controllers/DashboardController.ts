@@ -16,6 +16,46 @@ class DashboardController {
         }
     }
 
+    async getGlobalStats(req: Request, res: Response, next: NextFunction) {
+        try {
+            const stats = await DocumentService.getGlobalStats();
+
+            res.json({
+                success: true,
+                data: stats
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getBacklogByApprover(req: Request, res: Response, next: NextFunction) {
+        try {
+            const backlog = await DocumentService.getBacklogByApprover();
+
+            res.json({
+                success: true,
+                data: backlog
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getPersonalStats(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.userId;
+            const stats = await DocumentService.getPersonalStats(userId);
+
+            res.json({
+                success: true,
+                data: stats
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async getPending(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = req.user!.userId;

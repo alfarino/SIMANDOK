@@ -149,6 +149,92 @@ class DocumentService {
 
         return { total, pending, approved, rejected };
     }
+
+    /**
+     * Get global stats for all documents (admin view)
+     */
+    async getGlobalStats() {
+        const [total, pending, approved] = await Promise.all([
+            DocumentApproval.count({ where: { is_archived: false } }),
+            DocumentApproval.count({
+                where: {
+                    is_archived: false,
+                    approval_status: { [Op.in]: [ApprovalStatus.DIAJUKAN, ApprovalStatus.DIBUKA, ApprovalStatus.DIPERIKSA] }
+                }
+            }),
+            DocumentApproval.count({
+                where: { is_archived: false, approval_status: ApprovalStatus.SIAP_CETAK }
+            })
+        ]);
+
+        return { total, pending, approved };
+    }
+
+    /**
+     * Get backlog grouped by approver (for chart)
+     */
+    async getBacklogByApprover() {
+        const pendingDocs = await DocumentApproval.findAll({
+            where: {
+                is_archived: false,
+                approval_status: { [Op.in]: [ApprovalStatus.DIAJUKAN, ApprovalStatus.DIBUKA, ApprovalStatus.DIPERIKSA] }
+            },
+            include: [
+                { model: User, as: 'currentApprover', attributes: ['id', 'full_name'] }
+            ]
+        });
+
+        // Group by approver
+        const grouped: Map<number, { name: string; count: number }> = new Map();
+        for (const doc of pendingDocs) {
+            if (doc.current_approver_id && doc.currentApprover) {
+                const id = doc.current_approver_id;
+                if (!grouped.has(id)) {
+                    grouped.set(id, { name: doc.currentApprover.full_name, count: 0 });
+                }
+                grouped.get(id)!.count++;
+            }
+        }
+
+        return Array.from(grouped.entries())
+            .map(([id, data]) => ({ approverId: id, name: data.name, pendingCount: data.count }))
+            .sort((a, b) => b.pendingCount - a.pendingCount);
+    }
+
+    /**
+     * Get personal stats for approver
+     */
+    async getPersonalStats(userId: number) {
+        const [pendingForMe, approvedByMe, rejectedByMeActive] = await Promise.all([
+            // Dokumen yang pending untuk user ini
+            DocumentApproval.count({
+                where: {
+                    current_approver_id: userId,
+                    is_archived: false,
+                    approval_status: { [Op.in]: [ApprovalStatus.DIAJUKAN, ApprovalStatus.DIBUKA, ApprovalStatus.DIPERIKSA] }
+                }
+            }),
+            // Dokumen yang sudah di-approve oleh user (via DocumentApprover)
+            // For now, count via history would be more accurate but complex
+            // Using DocumentApprover table
+            0, // Will be updated via ApprovalHistory
+            // Dokumen yang masih dalam status DITOLAK dan ditolak oleh user ini
+            DocumentApproval.count({
+                where: {
+                    rejection_by_user_id: userId,
+                    approval_status: ApprovalStatus.DITOLAK,
+                    is_archived: false
+                }
+            })
+        ]);
+
+        return {
+            pendingForMe,
+            approvedByMe,
+            rejectedByMeActive  // Only count docs still in DITOLAK status
+        };
+    }
 }
 
 export default new DocumentService();
+

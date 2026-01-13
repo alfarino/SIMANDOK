@@ -1,27 +1,51 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
     Box, Typography, Card, CardContent, TextField, Button,
-    FormControl, InputLabel, Select, MenuItem, Chip, Alert
+    FormControl, InputLabel, Select, MenuItem, Chip, Alert,
+    CircularProgress
 } from '@mui/material'
 import { Send, Link as LinkIcon } from '@mui/icons-material'
 
+interface Approver {
+    id: number
+    full_name: string
+    role?: { role_name: string; hierarchy_level: number }
+}
+
 export default function UploadPage() {
+    const navigate = useNavigate()
     const [documentName, setDocumentName] = useState('')
     const [documentLink, setDocumentLink] = useState('')
     const [description, setDescription] = useState('')
     const [selectedApprovers, setSelectedApprovers] = useState<number[]>([])
+    const [availableApprovers, setAvailableApprovers] = useState<Approver[]>([])
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [loadingApprovers, setLoadingApprovers] = useState(true)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
 
-    // TODO: Fetch from API in Phase 5
-    const availableApprovers = [
-        { id: 4, name: 'Frengki, ST., MM', role: 'Kepala Seksi', level: 2 },
-        { id: 5, name: 'Roni Saputra, ST', role: 'Kepala Seksi', level: 2 },
-        { id: 2, name: 'Arpentius, ST., MM', role: 'Kepala Subdit', level: 3 },
-        { id: 3, name: 'Dr. Kiki Yulianto, STP, MP', role: 'Kepala Subdit', level: 3 },
-        { id: 1, name: 'Dr. Eng Muhammad Makky, STP., M.Si', role: 'Direktur', level: 4 }
-    ]
+    useEffect(() => {
+        fetchApprovers()
+    }, [])
+
+    const fetchApprovers = async () => {
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch('/api/users/approvers', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+
+            if (!res.ok) throw new Error('Failed to fetch approvers')
+
+            const data = await res.json()
+            setAvailableApprovers(data.data || [])
+        } catch (err) {
+            console.error('Failed to fetch approvers:', err)
+        } finally {
+            setLoadingApprovers(false)
+        }
+    }
 
     const handleSubmit = async () => {
         setError('')
@@ -53,22 +77,53 @@ export default function UploadPage() {
         setIsSubmitting(true)
 
         try {
-            // TODO: Implement API call in Phase 5
-            console.log('Creating document:', {
-                documentName,
-                documentLink,
-                description,
-                approverIds: selectedApprovers
+            const token = localStorage.getItem('token')
+
+            // Step 1: Create document
+            const createRes = await fetch('/api/documents', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    documentName,
+                    documentDescription: description,
+                    documentLink
+                })
             })
 
-            setSuccess('Dokumen berhasil dibuat!')
-            // Reset form
-            setDocumentName('')
-            setDocumentLink('')
-            setDescription('')
-            setSelectedApprovers([])
+            if (!createRes.ok) throw new Error('Failed to create document')
+
+            const createData = await createRes.json()
+            const docId = createData.data.id
+
+            // Step 2: Set approvers
+            await fetch(`/api/approvals/${docId}/approvers`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ approverIds: selectedApprovers })
+            })
+
+            // Step 3: Submit for approval
+            await fetch(`/api/approvals/${docId}/submit`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+
+            setSuccess('Dokumen berhasil dibuat dan diajukan!')
+
+            // Reset form after 2 seconds and redirect
+            setTimeout(() => {
+                navigate('/documents')
+            }, 2000)
+
         } catch (err) {
             setError('Gagal membuat dokumen')
+            console.error(err)
         } finally {
             setIsSubmitting(false)
         }
@@ -76,13 +131,13 @@ export default function UploadPage() {
 
     return (
         <Box>
-            <Typography variant="h4" gutterBottom>
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
                 Buat Dokumen Baru
             </Typography>
 
-            <Card sx={{ maxWidth: 600 }}>
+            <Card sx={{ maxWidth: 700 }}>
                 <CardContent>
-                    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                    {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
                     {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
                     <TextField
@@ -90,8 +145,9 @@ export default function UploadPage() {
                         label="Nama Dokumen"
                         value={documentName}
                         onChange={(e) => setDocumentName(e.target.value)}
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 3 }}
                         placeholder="Contoh: MOU dengan PT ABC"
+                        required
                     />
 
                     <TextField
@@ -99,9 +155,10 @@ export default function UploadPage() {
                         label="Link Draft Dokumen"
                         value={documentLink}
                         onChange={(e) => setDocumentLink(e.target.value)}
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 3 }}
                         placeholder="https://docs.google.com/document/d/..."
                         helperText="Paste link Google Docs, OneDrive, atau platform lainnya"
+                        required
                         InputProps={{
                             startAdornment: <LinkIcon sx={{ mr: 1, color: 'action.active' }} />
                         }}
@@ -114,52 +171,61 @@ export default function UploadPage() {
                         label="Deskripsi (Opsional)"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 3 }}
                         placeholder="Deskripsi singkat tentang dokumen"
                     />
 
-                    <FormControl fullWidth sx={{ mb: 2 }}>
+                    <FormControl fullWidth sx={{ mb: 3 }}>
                         <InputLabel>Pilih Approver</InputLabel>
                         <Select
                             multiple
                             value={selectedApprovers}
                             onChange={(e) => setSelectedApprovers(e.target.value as number[])}
                             label="Pilih Approver"
+                            disabled={loadingApprovers}
                             renderValue={(selected) => (
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                     {selected.map((id) => {
                                         const approver = availableApprovers.find(a => a.id === id)
-                                        return <Chip key={id} label={approver?.name} size="small" />
+                                        return <Chip key={id} label={approver?.full_name} size="small" color="primary" />
                                     })}
                                 </Box>
                             )}
                         >
-                            {availableApprovers.map((approver) => (
-                                <MenuItem key={approver.id} value={approver.id}>
-                                    <Box>
-                                        <Typography variant="body1">{approver.name}</Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            {approver.role} (Level {approver.level})
-                                        </Typography>
-                                    </Box>
+                            {loadingApprovers ? (
+                                <MenuItem disabled>
+                                    <CircularProgress size={20} sx={{ mr: 1 }} /> Memuat...
                                 </MenuItem>
-                            ))}
+                            ) : (
+                                availableApprovers.map((approver) => (
+                                    <MenuItem key={approver.id} value={approver.id}>
+                                        <Box>
+                                            <Typography variant="body1">{approver.full_name}</Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {approver.role?.role_name} (Level {approver.role?.hierarchy_level})
+                                            </Typography>
+                                        </Box>
+                                    </MenuItem>
+                                ))
+                            )}
                         </Select>
                     </FormControl>
 
-                    <Alert severity="info" sx={{ mb: 2 }}>
-                        Approver akan otomatis diurutkan berdasarkan hierarki (dari level terendah ke tertinggi)
+                    <Alert severity="info" sx={{ mb: 3 }}>
+                        <strong>Tips:</strong> Approver akan otomatis diurutkan berdasarkan hierarki (dari level terendah ke tertinggi).
+                        Pilih semua approver yang perlu menyetujui dokumen ini.
                     </Alert>
 
                     <Button
                         variant="contained"
                         size="large"
                         fullWidth
-                        startIcon={<Send />}
+                        startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <Send />}
                         onClick={handleSubmit}
                         disabled={isSubmitting}
+                        sx={{ py: 1.5 }}
                     >
-                        {isSubmitting ? 'Menyimpan...' : 'Simpan Dokumen'}
+                        {isSubmitting ? 'Menyimpan...' : 'Simpan & Ajukan'}
                     </Button>
                 </CardContent>
             </Card>

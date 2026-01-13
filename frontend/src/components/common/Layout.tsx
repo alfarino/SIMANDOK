@@ -1,27 +1,71 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import {
     Box, AppBar, Toolbar, Typography, IconButton, Drawer,
-    List, ListItem, ListItemIcon, ListItemText, ListItemButton, Badge
+    List, ListItem, ListItemIcon, ListItemText, ListItemButton, Divider
 } from '@mui/material'
 import {
     Menu as MenuIcon, Dashboard, Description, Upload,
-    Archive, Notifications, Logout
+    Archive, Logout, AssignmentInd, PeopleAlt
 } from '@mui/icons-material'
+import NotificationBell from './NotificationBell'
 
 const drawerWidth = 240
 
-const menuItems = [
-    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-    { text: 'Dokumen', icon: <Description />, path: '/documents' },
-    { text: 'Upload', icon: <Upload />, path: '/upload' },
-    { text: 'Arsip', icon: <Archive />, path: '/archive' }
-]
+interface UserInfo {
+    id: number
+    email: string
+    fullName: string
+    role: {
+        id: number
+        name: string
+        code: string
+        hierarchyLevel: number
+    }
+}
 
 export default function Layout() {
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [user, setUser] = useState<UserInfo | null>(null)
     const navigate = useNavigate()
     const location = useLocation()
+
+    useEffect(() => {
+        // Get user info from localStorage
+        const userStr = localStorage.getItem('user')
+        if (userStr) {
+            setUser(JSON.parse(userStr))
+        }
+    }, [])
+
+    const isAdmin = user?.role?.hierarchyLevel === 4 && user?.email === 'admin@unand.ac.id'
+
+    const handleLogout = () => {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        navigate('/login')
+    }
+
+    // Menu items based on role
+    const menuItems = useMemo(() => {
+        if (isAdmin) {
+            // Admin menu - only user management & read-only access
+            return [
+                { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+                { text: 'Manajemen User', icon: <PeopleAlt />, path: '/users' },
+                { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
+                { text: 'Arsip', icon: <Archive />, path: '/archive' }
+            ]
+        }
+        // Regular user menu
+        return [
+            { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+            { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
+            { text: 'Dokumen Saya', icon: <AssignmentInd />, path: '/my-documents' },
+            { text: 'Upload', icon: <Upload />, path: '/upload' },
+            { text: 'Arsip', icon: <Archive />, path: '/archive' }
+        ]
+    }, [isAdmin])
 
     const drawer = (
         <Box>
@@ -30,6 +74,18 @@ export default function Layout() {
                     SIMANDOK
                 </Typography>
             </Toolbar>
+            <Divider />
+            {user && (
+                <Box sx={{ px: 2, py: 1.5, bgcolor: 'action.hover' }}>
+                    <Typography variant="body2" fontWeight="bold" noWrap>
+                        {user.fullName}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                        {isAdmin ? '👑 Admin Sistem' : user.role?.name}
+                    </Typography>
+                </Box>
+            )}
+            <Divider />
             <List>
                 {menuItems.map((item) => (
                     <ListItem key={item.text} disablePadding>
@@ -61,12 +117,8 @@ export default function Layout() {
                     <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
                         Sistem Manajemen Dokumen
                     </Typography>
-                    <IconButton color="inherit">
-                        <Badge badgeContent={0} color="error">
-                            <Notifications />
-                        </Badge>
-                    </IconButton>
-                    <IconButton color="inherit" onClick={() => navigate('/login')}>
+                    {!isAdmin && <NotificationBell />}
+                    <IconButton color="inherit" onClick={handleLogout}>
                         <Logout />
                     </IconButton>
                 </Toolbar>

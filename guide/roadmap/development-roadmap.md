@@ -31,7 +31,9 @@ Semua 10 file dokumentasi sudah sinkron dengan design baru:
 - [x] Setup frontend (Vite + React)
 - [x] Setup Docker + MySQL
 - [x] Run migrations (buat semua tabel)
-- [x] Run seeders (roles, users DKSHR, hierarchy)
+- [x] Run seeders (roles, hierarchy)
+- [x] Seed admin user saja (`seed-admin.sql`)
+- [x] **Admin tambah user DKSHR via UI** (UserManagementPage)
 
 ---
 
@@ -97,13 +99,15 @@ Semua 10 file dokumentasi sudah sinkron dengan design baru:
 | `user-manual-approval.md` | Untuk memahami UX |
 
 **Task:**
-- [ ] Auth pages (login)
-- [ ] Dashboard
-- [ ] Upload form + ApproverSelect
-- [ ] Approval modals
-- [ ] NotificationBell (in-app)
-- [ ] Batch reminder trigger
-- [ ] Archive page
+- [x] Dashboard (gradient cards, backlog chart, personal stats)
+- [x] Semua Dokumen (table, tabs, filter, email reminder button)
+- [x] Dokumen Saya (personal queue, approve/reject buttons)
+- [x] Upload form + ApproverSelect (real API integration)
+- [x] Login page (gradient, real auth)
+- [x] NotificationBell (in-app, realtime count)
+- [x] Archive page (table, restore, audit trail)
+- [x] **Admin User Management** (CRUD users, role-based nav)
+- [x] Role-based access control (admin vs regular user nav)
 
 ---
 

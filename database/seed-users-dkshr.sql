@@ -3,8 +3,8 @@
 -- Password: password123 (hashed with bcrypt)
 -- =============================================
 
--- Default password hash for 'password123'
-SET @default_hash = '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
+-- Default password hash for 'password123' (bcryptjs with 10 rounds)
+SET @default_hash = '$2a$10$PgiLAQWb3BKfpNBhUhbPG.keEHKvU8WdJYgVGyaxNUgg8aXXQxjW96';
 
 -- Direktur (D) - Level 4
 INSERT INTO users (username, email, password_hash, full_name, role_id, team) VALUES
