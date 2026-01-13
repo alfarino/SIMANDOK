@@ -63,8 +63,7 @@ export class DocumentApproval {
     documentName: string;
     documentDescription: string | null;
     uploadedByUserId: number;
-    onedriveFileId: string | null;
-    onedriveLink: string | null;
+    documentLink: string;  // Link ke draft dokumen (Google Docs, OneDrive, dll)
     approvalStatus: ApprovalStatus;
     currentApproverId: number | null;
     currentSequence: number;
@@ -223,7 +222,6 @@ export class AuthService {
 // services/DocumentService.ts
 export class DocumentService {
     async create(data: CreateDocumentDTO, userId: number): Promise<DocumentApproval>;
-    async upload(documentId: number, file: File): Promise<DocumentApproval>;
     async findById(id: number): Promise<DocumentApproval>;
     async findByUser(userId: number, filters: DocumentFilters): Promise<PaginatedResult<DocumentApproval>>;
     async findPendingForApprover(approverId: number): Promise<DocumentApproval[]>;
@@ -323,11 +321,10 @@ export class AuditService {
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/documents` | List dokumen user |
-| POST | `/api/documents` | Create dokumen baru |
+| POST | `/api/documents` | Create dokumen baru (dengan link) |
 | GET | `/api/documents/:id` | Get dokumen detail |
 | PUT | `/api/documents/:id` | Update dokumen |
 | DELETE | `/api/documents/:id` | Delete dokumen (draft only) |
-| POST | `/api/documents/:id/upload` | Upload file ke OneDrive |
 | POST | `/api/documents/:id/submit` | Submit untuk approval |
 | GET | `/api/documents/:id/history` | Get approval history |
 

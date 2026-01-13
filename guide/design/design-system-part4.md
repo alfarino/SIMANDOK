@@ -34,7 +34,6 @@ simomou/
 │   │   │
 │   │   ├── config/
 │   │   │   ├── database.ts            # DB connection
-│   │   │   ├── onedrive.ts            # OneDrive config
 │   │   │   └── email.ts               # SMTP config
 │   │   │
 │   │   ├── entities/                  # ORM Entities
@@ -61,8 +60,7 @@ simomou/
 │   │   │   ├── EmailReminderService.ts
 │   │   │   ├── HierarchyService.ts
 │   │   │   ├── ArchiveService.ts
-│   │   │   ├── AuditService.ts
-│   │   │   └── OneDriveService.ts
+│   │   │   └── AuditService.ts
 │   │   │
 │   │   ├── controllers/               # Request Handlers
 │   │   │   ├── AuthController.ts

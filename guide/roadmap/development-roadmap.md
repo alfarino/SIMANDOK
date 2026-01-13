@@ -26,12 +26,12 @@ Semua 10 file dokumentasi sudah sinkron dengan design baru:
 | `dev-guide-approval.md` | Setup & Installation, Database Setup |
 
 **Task:**
-- [ ] Setup git repo dengan folder structure
-- [ ] Setup backend (Express + TypeScript)
-- [ ] Setup frontend (Vite + React)
-- [ ] Setup Docker + MySQL
-- [ ] Run migrations (buat semua tabel)
-- [ ] Run seeders (roles, users DKSHR, hierarchy)
+- [x] Setup git repo dengan folder structure
+- [x] Setup backend (Express + TypeScript)
+- [x] Setup frontend (Vite + React)
+- [x] Setup Docker + MySQL
+- [x] Run migrations (buat semua tabel)
+- [x] Run seeders (roles, users DKSHR, hierarchy)
 
 ---
 
@@ -45,11 +45,10 @@ Semua 10 file dokumentasi sudah sinkron dengan design baru:
 | `dev-guide-approval.md` | API Implementation |
 
 **Task:**
-- [ ] Auth Module (login, JWT, RBAC)
-- [ ] User Module (CRUD, get approvers)
-- [ ] Document Module (CRUD, upload)
-- [ ] HierarchyService (sort by level)
-- [ ] OneDrive Integration
+- [x] Auth Module (login, JWT, RBAC)
+- [x] User Module (CRUD, get approvers)
+- [x] Document Module (CRUD, dengan link)
+- [x] HierarchyService (sort by level)
 
 ---
 
