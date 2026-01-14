@@ -297,6 +297,68 @@ class ApprovalService {
 
         return record;
     }
+    /**
+     * Mark document as viewed by approver (changes "Belum Dilihat" to "Sedang Direview")
+     */
+    async markAsViewed(documentId: number, approverId: number): Promise<DocumentApprover | null> {
+        const approverRecord = await DocumentApprover.findOne({
+            where: { document_id: documentId, approver_user_id: approverId }
+        });
+
+        if (!approverRecord) {
+            return null;
+        }
+
+        // Only update if not already viewed
+        if (!approverRecord.viewed_at) {
+            await approverRecord.update({ viewed_at: new Date() });
+
+            // Also update document status to DIBUKA if it was just submitted
+            const document = await DocumentApproval.findByPk(documentId);
+            if (document && document.approval_status === ApprovalStatus.DIAJUKAN) {
+                await document.update({ approval_status: ApprovalStatus.DIBUKA });
+            }
+        }
+
+        return approverRecord;
+    }
+
+    /**
+     * Mark document as printed by Staff (SIAP_CETAK -> SUDAH_DICETAK)
+     */
+    async markAsPrinted(documentId: number, userId: number): Promise<DocumentApproval> {
+        const document = await DocumentApproval.findByPk(documentId);
+
+        if (!document) {
+            throw new AppError('Dokumen tidak ditemukan', 404, 'DOCUMENT_NOT_FOUND');
+        }
+
+        if (document.approval_status !== ApprovalStatus.SIAP_CETAK) {
+            throw new AppError('Dokumen belum siap cetak', 400, 'NOT_READY_TO_PRINT');
+        }
+
+        // Verify user is the uploader (Staff)
+        if (document.uploaded_by_user_id !== userId) {
+            throw new AppError('Hanya Staff yang mengupload yang dapat menandai sudah dicetak', 403, 'UNAUTHORIZED');
+        }
+
+        await document.update({
+            approval_status: ApprovalStatus.SUDAH_DICETAK,
+            printed_at: new Date(),
+            printed_by_user_id: userId
+        });
+
+        // Log history
+        await ApprovalHistory.create({
+            document_id: documentId,
+            action_by_user_id: userId,
+            action_type: ActionType.PRINTED,
+            from_status: ApprovalStatus.SIAP_CETAK,
+            to_status: ApprovalStatus.SUDAH_DICETAK
+        });
+
+        return document;
+    }
 }
 
 export default new ApprovalService();

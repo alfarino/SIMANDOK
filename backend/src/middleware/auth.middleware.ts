@@ -77,3 +77,41 @@ export const requireMinLevel = (minLevel: number) => {
         }
     };
 };
+
+// Staff only (role level 1) - for upload documents
+export const requireStaffOnly = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.user) {
+            throw new AppError('Unauthorized', 401, 'UNAUTHORIZED');
+        }
+
+        const user = await AuthService.getUserById(req.user.userId);
+
+        if (!user.role || user.role.hierarchy_level !== 1) {
+            throw new AppError('Hanya Staff yang dapat mengupload dokumen', 403, 'STAFF_ONLY');
+        }
+
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Approvers only (role level > 1) - for reviewing documents
+export const requireApprover = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.user) {
+            throw new AppError('Unauthorized', 401, 'UNAUTHORIZED');
+        }
+
+        const user = await AuthService.getUserById(req.user.userId);
+
+        if (!user.role || user.role.hierarchy_level < 2) {
+            throw new AppError('Hanya Approver yang dapat mereview dokumen', 403, 'APPROVER_ONLY');
+        }
+
+        next();
+    } catch (error) {
+        next(error);
+    }
+};

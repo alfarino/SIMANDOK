@@ -6,6 +6,8 @@ import MyDocumentsPage from './pages/MyDocumentsPage'
 import UploadPage from './pages/UploadPage'
 import ArchivePage from './pages/ArchivePage'
 import UserManagementPage from './pages/UserManagementPage'
+import DocumentReviewPage from './pages/DocumentReviewPage'
+import ReviewHistoryPage from './pages/ReviewHistoryPage'
 import NotFoundPage from './pages/NotFoundPage'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import Layout from './components/common/Layout'
@@ -23,6 +25,8 @@ function App() {
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/documents" element={<DocumentsPage />} />
                     <Route path="/my-documents" element={<MyDocumentsPage />} />
+                    <Route path="/review/:id" element={<DocumentReviewPage />} />
+                    <Route path="/review-history/:id" element={<ReviewHistoryPage />} />
                     <Route path="/upload" element={<UploadPage />} />
                     <Route path="/archive" element={<ArchivePage />} />
                     <Route path="/users" element={<UserManagementPage />} />

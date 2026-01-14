@@ -79,7 +79,7 @@ export default function UploadPage() {
         try {
             const token = localStorage.getItem('token')
 
-            // Step 1: Create document
+            // Atomic Create & Submit
             const createRes = await fetch('/api/documents', {
                 method: 'POST',
                 headers: {
@@ -89,30 +89,12 @@ export default function UploadPage() {
                 body: JSON.stringify({
                     documentName,
                     documentDescription: description,
-                    documentLink
+                    documentLink,
+                    approverIds: selectedApprovers // Backend will handle sorting & submitting
                 })
             })
 
             if (!createRes.ok) throw new Error('Failed to create document')
-
-            const createData = await createRes.json()
-            const docId = createData.data.id
-
-            // Step 2: Set approvers
-            await fetch(`/api/approvals/${docId}/approvers`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ approverIds: selectedApprovers })
-            })
-
-            // Step 3: Submit for approval
-            await fetch(`/api/approvals/${docId}/submit`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
 
             setSuccess('Dokumen berhasil dibuat dan diajukan!')
 

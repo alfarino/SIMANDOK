@@ -19,6 +19,8 @@ export interface DocumentApprovalAttributes {
     is_archived?: boolean;
     archived_at?: Date;
     archived_by_user_id?: number;
+    printed_at?: Date;
+    printed_by_user_id?: number;
     version?: number;
     created_at?: Date;
     updated_at?: Date;
@@ -40,6 +42,8 @@ class DocumentApproval extends Model<DocumentApprovalAttributes> implements Docu
     public is_archived!: boolean;
     public archived_at?: Date;
     public archived_by_user_id?: number;
+    public printed_at?: Date;
+    public printed_by_user_id?: number;
     public version!: number;
     public readonly created_at!: Date;
     public readonly updated_at!: Date;
@@ -112,6 +116,15 @@ DocumentApproval.init(
             allowNull: true
         },
         archived_by_user_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: { model: 'users', key: 'id' }
+        },
+        printed_at: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
+        printed_by_user_id: {
             type: DataTypes.INTEGER,
             allowNull: true,
             references: { model: 'users', key: 'id' }

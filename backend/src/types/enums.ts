@@ -7,6 +7,7 @@ export enum ApprovalStatus {
     DISETUJUI = 'DISETUJUI',
     DITOLAK = 'DITOLAK',
     SIAP_CETAK = 'SIAP_CETAK',
+    SUDAH_DICETAK = 'SUDAH_DICETAK',
     ARCHIVED = 'ARCHIVED'
 }
 
@@ -35,6 +36,7 @@ export enum ActionType {
     APPROVED = 'APPROVED',
     REJECTED = 'REJECTED',
     REVISED = 'REVISED',
+    PRINTED = 'PRINTED',
     ARCHIVED = 'ARCHIVED',
     RESTORED = 'RESTORED'
 }

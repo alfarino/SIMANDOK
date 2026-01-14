@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import DocumentService from '../services/DocumentService';
+import ApprovalService from '../services/ApprovalService';
 
 class DocumentController {
     async getAll(req: Request, res: Response, next: NextFunction) {
@@ -61,7 +62,7 @@ class DocumentController {
                 documentLink,
                 uploadedByUserId,
                 approverIds: approverIds || []
-            });
+            }, true); // autoSubmit = true
 
             res.status(201).json({
                 success: true,
@@ -125,6 +126,53 @@ class DocumentController {
             res.json({
                 success: true,
                 data: documents
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getReadyToPrint(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.userId;
+            const documents = await DocumentService.getReadyToPrint(userId);
+
+            res.json({
+                success: true,
+                data: documents
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async markAsViewed(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const userId = req.user!.userId;
+
+            await ApprovalService.markAsViewed(parseInt(id), userId);
+
+            res.json({
+                success: true,
+                message: 'Dokumen ditandai sudah dilihat'
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async markAsPrinted(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const userId = req.user!.userId;
+
+            const document = await ApprovalService.markAsPrinted(parseInt(id), userId);
+
+            res.json({
+                success: true,
+                message: 'Dokumen ditandai sudah dicetak',
+                data: document
             });
         } catch (error) {
             next(error);

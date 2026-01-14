@@ -57,15 +57,38 @@ export default function Layout() {
                 { text: 'Arsip', icon: <Archive />, path: '/archive' }
             ]
         }
-        // Regular user menu
+
+        const hierarchyLevel = user?.role?.hierarchyLevel || 0
+        const isStaff = hierarchyLevel === 1
+        const isApprover = hierarchyLevel >= 2 && hierarchyLevel <= 4
+
+        // Staff menu - can upload documents, see their uploads
+        if (isStaff) {
+            return [
+                { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+                { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
+                { text: 'Upload', icon: <Upload />, path: '/upload' },
+                { text: 'Arsip', icon: <Archive />, path: '/archive' }
+            ]
+        }
+
+        // Approver menu (Kasie/Kasubdit/Direktur) - review documents
+        if (isApprover) {
+            return [
+                { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+                { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
+                { text: 'Dokumen Saya', icon: <AssignmentInd />, path: '/my-documents' },
+                { text: 'Arsip', icon: <Archive />, path: '/archive' }
+            ]
+        }
+
+        // Fallback menu
         return [
             { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
             { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
-            { text: 'Dokumen Saya', icon: <AssignmentInd />, path: '/my-documents' },
-            { text: 'Upload', icon: <Upload />, path: '/upload' },
             { text: 'Arsip', icon: <Archive />, path: '/archive' }
         ]
-    }, [isAdmin])
+    }, [isAdmin, user])
 
     const drawer = (
         <Box>

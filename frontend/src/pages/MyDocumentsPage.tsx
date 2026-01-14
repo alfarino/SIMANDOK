@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
     Box, Typography, Tabs, Tab, Paper, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Chip, Button, IconButton,
     CircularProgress, Alert, Tooltip, Card, CardContent, Grid
 } from '@mui/material'
 import {
-    OpenInNew, Refresh, CheckCircle, Cancel, HourglassEmpty
+    OpenInNew, Refresh, CheckCircle, Cancel, HourglassEmpty, RateReview
 } from '@mui/icons-material'
 
 interface Document {
@@ -48,12 +49,12 @@ const STATUS_LABELS: Record<string, string> = {
 type TabValue = 'pending' | 'approved' | 'rejected'
 
 export default function MyDocumentsPage() {
+    const navigate = useNavigate()
     const [pendingDocs, setPendingDocs] = useState<Document[]>([])
     const [stats, setStats] = useState<PersonalStats | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [tab, setTab] = useState<TabValue>('pending')
-    const [actionLoading, setActionLoading] = useState<number | null>(null)
     const [successMsg, setSuccessMsg] = useState('')
 
     useEffect(() => {
@@ -82,57 +83,6 @@ export default function MyDocumentsPage() {
             console.error(err)
         } finally {
             setLoading(false)
-        }
-    }
-
-    const handleApprove = async (docId: number) => {
-        setActionLoading(docId)
-        try {
-            const token = localStorage.getItem('token')
-            const res = await fetch(`/api/approvals/${docId}/approve`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ remarks: 'Disetujui' })
-            })
-
-            if (!res.ok) throw new Error('Failed to approve')
-
-            setSuccessMsg('Dokumen berhasil disetujui!')
-            fetchData()
-        } catch (err) {
-            setError('Gagal menyetujui dokumen')
-        } finally {
-            setActionLoading(null)
-        }
-    }
-
-    const handleReject = async (docId: number) => {
-        const reason = prompt('Alasan penolakan:')
-        if (!reason) return
-
-        setActionLoading(docId)
-        try {
-            const token = localStorage.getItem('token')
-            const res = await fetch(`/api/approvals/${docId}/reject`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ reason })
-            })
-
-            if (!res.ok) throw new Error('Failed to reject')
-
-            setSuccessMsg('Dokumen ditolak')
-            fetchData()
-        } catch (err) {
-            setError('Gagal menolak dokumen')
-        } finally {
-            setActionLoading(null)
         }
     }
 
@@ -200,7 +150,7 @@ export default function MyDocumentsPage() {
                             <Cancel sx={{ fontSize: 36, color: '#d32f2f' }} />
                             <Box>
                                 <Typography variant="h4" fontWeight="bold">{stats?.rejectedByMeActive || 0}</Typography>
-                                <Typography variant="body2" color="text.secondary">Anda Tolak (Belum Revisi)</Typography>
+                                <Typography variant="body2" color="text.secondary">Anda Tolak (Pending Revisi)</Typography>
                             </Box>
                         </CardContent>
                     </Card>
@@ -208,15 +158,13 @@ export default function MyDocumentsPage() {
             </Grid>
 
             {/* Tabs */}
-            <Paper sx={{ mb: 3 }}>
-                <Tabs value={tab} onChange={(_, v) => setTab(v)}>
-                    <Tab label={`Perlu Review (${stats?.pendingForMe || 0})`} value="pending" />
-                    <Tab label={`Sudah Disetujui (${stats?.approvedByMe || 0})`} value="approved" />
-                    <Tab label={`Ditolak (${stats?.rejectedByMeActive || 0})`} value="rejected" />
-                </Tabs>
-            </Paper>
+            <Tabs value={tab} onChange={(_, v) => setTab(v as TabValue)} sx={{ mb: 3 }}>
+                <Tab label="Perlu Review" value="pending" />
+                <Tab label="Sudah Disetujui" value="approved" />
+                <Tab label="Ditolak" value="rejected" />
+            </Tabs>
 
-            {/* Table - Pending Documents */}
+            {/* Pending Documents Table */}
             {tab === 'pending' && (
                 <TableContainer component={Paper}>
                     <Table>
@@ -270,20 +218,11 @@ export default function MyDocumentsPage() {
                                                 <Button
                                                     size="small"
                                                     variant="contained"
-                                                    color="success"
-                                                    onClick={() => handleApprove(doc.id)}
-                                                    disabled={actionLoading === doc.id}
+                                                    color="primary"
+                                                    startIcon={<RateReview />}
+                                                    onClick={() => navigate(`/review/${doc.id}`)}
                                                 >
-                                                    {actionLoading === doc.id ? <CircularProgress size={16} /> : 'Setujui'}
-                                                </Button>
-                                                <Button
-                                                    size="small"
-                                                    variant="outlined"
-                                                    color="error"
-                                                    onClick={() => handleReject(doc.id)}
-                                                    disabled={actionLoading === doc.id}
-                                                >
-                                                    Tolak
+                                                    Review
                                                 </Button>
                                             </Box>
                                         </TableCell>

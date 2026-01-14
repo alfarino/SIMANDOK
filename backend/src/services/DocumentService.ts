@@ -1,9 +1,11 @@
 import { Op } from 'sequelize';
+import { sequelize } from '../config/database';
 import DocumentApproval from '../entities/DocumentApproval';
+import DocumentApprover from '../entities/DocumentApprover';
 import User from '../entities/User';
 import Role from '../entities/Role';
 import { AppError } from '../middleware/error.middleware';
-import { ApprovalStatus } from '../types/enums';
+import { ApprovalStatus, ApproverStatus } from '../types/enums';
 
 interface CreateDocumentDTO {
     documentName: string;
@@ -14,42 +16,77 @@ interface CreateDocumentDTO {
 }
 
 class DocumentService {
-    async create(data: CreateDocumentDTO) {
-        // Validate approvers exist and sort by hierarchy
-        const approvers = await User.findAll({
-            where: { id: data.approverIds },
-            include: [{ model: Role, as: 'role' }]
-        });
+    async create(data: CreateDocumentDTO, autoSubmit: boolean = false) {
+        const t = await sequelize.transaction();
 
-        if (approvers.length !== data.approverIds.length) {
-            throw new AppError('Beberapa approver tidak ditemukan', 400, 'INVALID_APPROVERS');
+        try {
+            // Validate approvers exist and sort by hierarchy
+            const approvers = await User.findAll({
+                where: { id: data.approverIds },
+                include: [{ model: Role, as: 'role' }]
+            });
+
+            if (data.approverIds.length > 0 && approvers.length !== data.approverIds.length) {
+                throw new AppError('Beberapa approver tidak ditemukan', 400, 'INVALID_APPROVERS');
+            }
+
+            // Sort approvers by hierarchy level
+            const sortedApprovers = approvers.sort(
+                (a, b) => (a.role?.hierarchy_level || 0) - (b.role?.hierarchy_level || 0)
+            );
+
+            // Create document
+            const document = await DocumentApproval.create({
+                document_name: data.documentName,
+                document_description: data.description,
+                document_link: data.documentLink,
+                uploaded_by_user_id: data.uploadedByUserId,
+                approval_status: ApprovalStatus.DRAFT,
+                total_approvers: sortedApprovers.length,
+                current_sequence: 0
+            }, { transaction: t });
+
+            // Create document_approvers entries with sequence
+            for (let i = 0; i < sortedApprovers.length; i++) {
+                await DocumentApprover.create({
+                    document_id: document.id,
+                    approver_user_id: sortedApprovers[i].id,
+                    sequence_order: i + 1,
+                    status: ApproverStatus.PENDING
+                }, { transaction: t });
+            }
+
+            // Auto-submit logic
+            if (autoSubmit && sortedApprovers.length > 0) {
+                const firstApprover = sortedApprovers[0];
+
+                await document.update({
+                    approval_status: ApprovalStatus.DIAJUKAN,
+                    current_approver_id: firstApprover.id,
+                    current_sequence: 1
+                }, { transaction: t });
+
+                // We could also call NotificationService here if needed,
+                // but usually ApprovalService.submitForApproval does more.
+                // For simplicity and robustness, we do basic updates here
+                // matching submit logic, or we could create an ApprovalHistory entry.
+            }
+
+            await t.commit();
+
+            return {
+                document: await document.reload(), // Reload to get updated status
+                approvers: sortedApprovers.map((a, idx) => ({
+                    userId: a.id,
+                    fullName: a.full_name,
+                    sequence: idx + 1,
+                    roleCode: a.role?.role_code
+                }))
+            };
+        } catch (error) {
+            await t.rollback();
+            throw error;
         }
-
-        // Sort approvers by hierarchy level
-        const sortedApprovers = approvers.sort(
-            (a, b) => (a.role?.hierarchy_level || 0) - (b.role?.hierarchy_level || 0)
-        );
-
-        // Create document
-        const document = await DocumentApproval.create({
-            document_name: data.documentName,
-            document_description: data.description,
-            document_link: data.documentLink,
-            uploaded_by_user_id: data.uploadedByUserId,
-            approval_status: ApprovalStatus.DRAFT,
-            total_approvers: sortedApprovers.length,
-            current_sequence: 0
-        });
-
-        return {
-            document,
-            approvers: sortedApprovers.map((a, idx) => ({
-                userId: a.id,
-                fullName: a.full_name,
-                sequence: idx + 1,
-                roleCode: a.role?.role_code
-            }))
-        };
     }
 
     async findAll(filters?: { uploadedBy?: number; status?: ApprovalStatus }) {
@@ -233,6 +270,40 @@ class DocumentService {
             approvedByMe,
             rejectedByMeActive  // Only count docs still in DITOLAK status
         };
+    }
+    /**
+     * Get documents ready to print for Staff (their own uploads)
+     */
+    async getReadyToPrint(userId: number) {
+        return DocumentApproval.findAll({
+            where: {
+                uploaded_by_user_id: userId,
+                approval_status: { [Op.in]: [ApprovalStatus.SIAP_CETAK, ApprovalStatus.SUDAH_DICETAK] },
+                is_archived: false
+            },
+            include: [
+                { model: User, as: 'uploadedBy', attributes: ['id', 'full_name', 'email'] }
+            ],
+            order: [['updated_at', 'DESC']]
+        });
+    }
+
+    /**
+     * Get documents by status (for archive page, all documents page etc)
+     */
+    async findByStatus(status: ApprovalStatus | ApprovalStatus[]) {
+        const statusArr = Array.isArray(status) ? status : [status];
+        return DocumentApproval.findAll({
+            where: {
+                approval_status: { [Op.in]: statusArr },
+                is_archived: false
+            },
+            include: [
+                { model: User, as: 'uploadedBy', attributes: ['id', 'full_name', 'email'] },
+                { model: User, as: 'currentApprover', attributes: ['id', 'full_name', 'email'] }
+            ],
+            order: [['updated_at', 'DESC']]
+        });
     }
 }
 

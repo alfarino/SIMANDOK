@@ -10,6 +10,7 @@ export interface DocumentApproverAttributes {
     approver_user_id: number;
     sequence_order: number;
     status?: ApproverStatus;
+    viewed_at?: Date;
     approved_at?: Date;
     remarks?: string;
     created_at?: Date;
@@ -22,6 +23,7 @@ class DocumentApprover extends Model<DocumentApproverAttributes> implements Docu
     public approver_user_id!: number;
     public sequence_order!: number;
     public status!: ApproverStatus;
+    public viewed_at?: Date;
     public approved_at?: Date;
     public remarks?: string;
     public readonly created_at!: Date;
@@ -56,6 +58,10 @@ DocumentApprover.init(
         status: {
             type: DataTypes.ENUM(...Object.values(ApproverStatus)),
             defaultValue: ApproverStatus.PENDING
+        },
+        viewed_at: {
+            type: DataTypes.DATE,
+            allowNull: true
         },
         approved_at: {
             type: DataTypes.DATE,

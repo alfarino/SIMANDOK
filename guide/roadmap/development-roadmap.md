@@ -108,6 +108,8 @@ Semua 10 file dokumentasi sudah sinkron dengan design baru:
 - [x] Archive page (table, restore, audit trail)
 - [x] **Admin User Management** (CRUD users, role-based nav)
 - [x] Role-based access control (admin vs regular user nav)
+- [x] **Upload protected for Staff only** (requireStaffOnly middleware)
+- [x] **Document Review Page** for approvers with workflow progress
 
 ---
 
