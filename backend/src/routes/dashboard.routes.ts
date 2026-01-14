@@ -25,4 +25,10 @@ router.get('/pending', DashboardController.getPending);
 // GET /api/dashboard/recent
 router.get('/recent', DashboardController.getRecent);
 
+// GET /api/dashboard/workflow-distribution
+router.get('/workflow-distribution', DashboardController.getWorkflowDistribution);
+
+// GET /api/dashboard/status-distribution
+router.get('/status-distribution', DashboardController.getStatusDistribution);
+
 export default router;

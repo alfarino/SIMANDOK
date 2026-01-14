@@ -9,7 +9,7 @@ class DashboardController {
 
             res.json({
                 success: true,
-                data: summary
+                data: summary,
             });
         } catch (error) {
             next(error);
@@ -22,7 +22,7 @@ class DashboardController {
 
             res.json({
                 success: true,
-                data: stats
+                data: stats,
             });
         } catch (error) {
             next(error);
@@ -35,7 +35,7 @@ class DashboardController {
 
             res.json({
                 success: true,
-                data: backlog
+                data: backlog,
             });
         } catch (error) {
             next(error);
@@ -49,7 +49,7 @@ class DashboardController {
 
             res.json({
                 success: true,
-                data: stats
+                data: stats,
             });
         } catch (error) {
             next(error);
@@ -63,7 +63,7 @@ class DashboardController {
 
             res.json({
                 success: true,
-                data: documents
+                data: documents,
             });
         } catch (error) {
             next(error);
@@ -80,7 +80,33 @@ class DashboardController {
 
             res.json({
                 success: true,
-                data: recent
+                data: recent,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getWorkflowDistribution(req: Request, res: Response, next: NextFunction) {
+        try {
+            const distribution = await DocumentService.getWorkflowDistribution();
+
+            res.json({
+                success: true,
+                data: distribution,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getStatusDistribution(req: Request, res: Response, next: NextFunction) {
+        try {
+            const distribution = await DocumentService.getStatusDistribution();
+
+            res.json({
+                success: true,
+                data: distribution,
             });
         } catch (error) {
             next(error);

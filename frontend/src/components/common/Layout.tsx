@@ -1,50 +1,44 @@
-import { useState, useEffect, useMemo } from 'react'
-import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import {
-    Box, AppBar, Toolbar, Typography, IconButton, Drawer,
-    List, ListItem, ListItemIcon, ListItemText, ListItemButton, Divider
-} from '@mui/material'
-import {
-    Menu as MenuIcon, Dashboard, Description, Upload,
-    Archive, Logout, AssignmentInd, PeopleAlt
-} from '@mui/icons-material'
-import NotificationBell from './NotificationBell'
+import { useState, useEffect, useMemo } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Box, AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Divider } from '@mui/material';
+import { Menu as MenuIcon, Dashboard, Description, Upload, Archive, Logout, AssignmentInd, PeopleAlt } from '@mui/icons-material';
+import NotificationBell from './NotificationBell';
 
-const drawerWidth = 240
+const drawerWidth = 240;
 
 interface UserInfo {
-    id: number
-    email: string
-    fullName: string
+    id: number;
+    email: string;
+    fullName: string;
     role: {
-        id: number
-        name: string
-        code: string
-        hierarchyLevel: number
-    }
+        id: number;
+        name: string;
+        code: string;
+        hierarchyLevel: number;
+    };
 }
 
 export default function Layout() {
-    const [mobileOpen, setMobileOpen] = useState(false)
-    const [user, setUser] = useState<UserInfo | null>(null)
-    const navigate = useNavigate()
-    const location = useLocation()
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [user, setUser] = useState<UserInfo | null>(null);
+    const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         // Get user info from localStorage
-        const userStr = localStorage.getItem('user')
+        const userStr = localStorage.getItem('user');
         if (userStr) {
-            setUser(JSON.parse(userStr))
+            setUser(JSON.parse(userStr));
         }
-    }, [])
+    }, []);
 
-    const isAdmin = user?.role?.hierarchyLevel === 4 && user?.email === 'admin@unand.ac.id'
+    const isAdmin = user?.role?.hierarchyLevel === 4 && user?.email === 'admin@unand.ac.id';
 
     const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        navigate('/login')
-    }
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/login');
+    };
 
     // Menu items based on role
     const menuItems = useMemo(() => {
@@ -54,13 +48,13 @@ export default function Layout() {
                 { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
                 { text: 'Manajemen User', icon: <PeopleAlt />, path: '/users' },
                 { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
-                { text: 'Arsip', icon: <Archive />, path: '/archive' }
-            ]
+                { text: 'Arsip', icon: <Archive />, path: '/archive' },
+            ];
         }
 
-        const hierarchyLevel = user?.role?.hierarchyLevel || 0
-        const isStaff = hierarchyLevel === 1
-        const isApprover = hierarchyLevel >= 2 && hierarchyLevel <= 4
+        const hierarchyLevel = user?.role?.hierarchyLevel || 0;
+        const isStaff = hierarchyLevel === 1;
+        const isApprover = hierarchyLevel >= 2 && hierarchyLevel <= 4;
 
         // Staff menu - can upload documents, track their submissions
         if (isStaff) {
@@ -69,8 +63,8 @@ export default function Layout() {
                 { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
                 { text: 'Upload', icon: <Upload />, path: '/upload' },
                 { text: 'Dokumen Diajukan', icon: <AssignmentInd />, path: '/dokumen-diajukan' },
-                { text: 'Arsip', icon: <Archive />, path: '/archive' }
-            ]
+                { text: 'Arsip', icon: <Archive />, path: '/archive' },
+            ];
         }
 
         // Approver menu (Kasie/Kasubdit/Direktur) - review documents
@@ -79,44 +73,41 @@ export default function Layout() {
                 { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
                 { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
                 { text: 'Review Dokumen', icon: <AssignmentInd />, path: '/review-dokumen' },
-                { text: 'Arsip', icon: <Archive />, path: '/archive' }
-            ]
+                { text: 'Arsip', icon: <Archive />, path: '/archive' },
+            ];
         }
 
         // Fallback menu
         return [
             { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
             { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
-            { text: 'Arsip', icon: <Archive />, path: '/archive' }
-        ]
-    }, [isAdmin, user])
+            { text: 'Arsip', icon: <Archive />, path: '/archive' },
+        ];
+    }, [isAdmin, user]);
 
     const drawer = (
         <Box>
-            <Toolbar>
-                <Typography variant="h6" noWrap>
+            <Toolbar sx={{ bgcolor: 'rgba(0, 0, 0, 0.1)' }}>
+                <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: '#F0D323' }}>
                     SIMANDOK
                 </Typography>
             </Toolbar>
-            <Divider />
+            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
             {user && (
-                <Box sx={{ px: 2, py: 1.5, bgcolor: 'action.hover' }}>
-                    <Typography variant="body2" fontWeight="bold" noWrap>
+                <Box sx={{ px: 2, py: 1.5, bgcolor: 'rgba(0, 0, 0, 0.15)' }}>
+                    <Typography variant="body2" fontWeight="bold" noWrap sx={{ color: '#FFFFFF' }}>
                         {user.fullName}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                         {isAdmin ? '👑 Admin Sistem' : user.role?.name}
                     </Typography>
                 </Box>
             )}
-            <Divider />
+            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
             <List>
                 {menuItems.map((item) => (
                     <ListItem key={item.text} disablePadding>
-                        <ListItemButton
-                            selected={location.pathname === item.path}
-                            onClick={() => navigate(item.path)}
-                        >
+                        <ListItemButton selected={location.pathname === item.path} onClick={() => navigate(item.path)}>
                             <ListItemIcon>{item.icon}</ListItemIcon>
                             <ListItemText primary={item.text} />
                         </ListItemButton>
@@ -124,21 +115,16 @@ export default function Layout() {
                 ))}
             </List>
         </Box>
-    )
+    );
 
     return (
         <Box sx={{ display: 'flex' }}>
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Toolbar>
-                    <IconButton
-                        color="inherit"
-                        edge="start"
-                        onClick={() => setMobileOpen(!mobileOpen)}
-                        sx={{ mr: 2, display: { sm: 'none' } }}
-                    >
+                    <IconButton color="inherit" edge="start" onClick={() => setMobileOpen(!mobileOpen)} sx={{ mr: 2, display: { sm: 'none' } }}>
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" noWrap sx={{ flexGrow: 1, color: '#FFFFFF', fontWeight: 600 }}>
                         Sistem Manajemen Dokumen
                     </Typography>
                     {!isAdmin && <NotificationBell />}
@@ -154,9 +140,8 @@ export default function Layout() {
                     width: drawerWidth,
                     flexShrink: 0,
                     display: { xs: 'none', sm: 'block' },
-                    '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' }
-                }}
-            >
+                    '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' },
+                }}>
                 {drawer}
             </Drawer>
 
@@ -166,9 +151,8 @@ export default function Layout() {
                 onClose={() => setMobileOpen(false)}
                 sx={{
                     display: { xs: 'block', sm: 'none' },
-                    '& .MuiDrawer-paper': { width: drawerWidth }
-                }}
-            >
+                    '& .MuiDrawer-paper': { width: drawerWidth },
+                }}>
                 {drawer}
             </Drawer>
 
@@ -178,11 +162,10 @@ export default function Layout() {
                     flexGrow: 1,
                     p: 3,
                     width: { sm: `calc(100% - ${drawerWidth}px)` },
-                    mt: 8
-                }}
-            >
+                    mt: 8,
+                }}>
                 <Outlet />
             </Box>
         </Box>
-    )
+    );
 }
