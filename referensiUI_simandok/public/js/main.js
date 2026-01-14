@@ -4,6 +4,35 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('Sistem Pemantauan Dokumen - Ready');
 
     // ================================
+    // Mobile Menu Toggle
+    // ================================
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+    const sidebar = document.getElementById('sidebar');
+
+    if (mobileMenuBtn && sidebar) {
+        mobileMenuBtn.addEventListener('click', function () {
+            sidebar.classList.remove('-translate-x-full');
+        });
+    }
+
+    if (closeSidebarBtn && sidebar) {
+        closeSidebarBtn.addEventListener('click', function () {
+            sidebar.classList.add('-translate-x-full');
+        });
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function (e) {
+        if (window.innerWidth < 640) {
+            // sm breakpoint
+            if (!sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        }
+    });
+
+    // ================================
     // Tracking Dropdown Toggle
     // ================================
     const trackingBtns = document.querySelectorAll('.tracking-btn');

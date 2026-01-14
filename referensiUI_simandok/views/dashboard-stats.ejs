@@ -1,8 +1,8 @@
-<div id="dashboardContainer" class="w-full h-full overflow-hidden">
+<div id="dashboardContainer" class="w-full h-full overflow-hidden px-2 sm:px-4 md:px-8 lg:px-16">
     <!-- Header with Fullscreen Button -->
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold" style="color: #262626">Dashboard Statistik Dokumen</h1>
-        <div class="flex items-center space-x-3">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Dashboard Statistik Dokumen</h1>
+        <div class="flex flex-row flex-wrap items-center gap-2">
             <a href="/documents" class="px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition flex items-center space-x-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -19,22 +19,22 @@
     </div>
 
     <!-- Stats Cards -->
-    <%- include('partials/stats-cards') %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6"><%- include('partials/stats-cards') %></div>
 
     <!-- Dashboard Charts -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Workflow Stage Distribution -->
-        <div class="bg-white rounded-xl shadow-xl p-6">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Distribusi per Tahapan</h3>
-            <div class="relative" style="height: 300px">
+        <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6">
+            <h3 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Distribusi per Tahapan</h3>
+            <div class="relative h-48 sm:h-64 md:h-72 lg:h-80 xl:h-96">
                 <canvas id="workflowChart"></canvas>
             </div>
         </div>
 
         <!-- Status & Reviewer Distribution -->
-        <div class="bg-white rounded-xl shadow-xl p-6">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Status & Distribusi Dokumen</h3>
-            <div class="relative" style="height: 300px">
+        <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6">
+            <h3 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Status & Distribusi Dokumen</h3>
+            <div class="relative h-48 sm:h-64 md:h-72 lg:h-80 xl:h-96">
                 <canvas id="statusChart"></canvas>
             </div>
         </div>
@@ -61,7 +61,7 @@
         width: 100vw;
         height: 100vh;
         overflow: hidden !important;
-        padding: 1rem;
+        padding: 2rem 3.5rem;
         display: flex;
         flex-direction: column;
         box-sizing: border-box;
@@ -72,7 +72,7 @@
         width: 100vw;
         height: 100vh;
         overflow: hidden !important;
-        padding: 1rem;
+        padding: 2rem 3.5rem;
         display: flex;
         flex-direction: column;
         box-sizing: border-box;
@@ -83,7 +83,7 @@
         width: 100vw;
         height: 100vh;
         overflow: hidden !important;
-        padding: 1rem;
+        padding: 2rem 3.5rem;
         display: flex;
         flex-direction: column;
         box-sizing: border-box;
@@ -111,7 +111,7 @@
         flex: 0 0 auto;
         height: 16vh;
         margin-bottom: 0.75rem;
-        gap: 0.75rem;
+        gap: 1.25rem;
     }
 
     #dashboardContainer:fullscreen .grid.grid-cols-1.md\\:grid-cols-3 > div,
@@ -133,7 +133,7 @@
         width: 2.5rem;
         height: 2.5rem;
     }
-
+    gap: 1.25rem;
     /* Charts grid in fullscreen - maximize space */
     #dashboardContainer:fullscreen .grid.grid-cols-1.md\\:grid-cols-2,
     #dashboardContainer:-webkit-full-screen .grid.grid-cols-1.md\\:grid-cols-2,

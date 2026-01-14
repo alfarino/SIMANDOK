@@ -6,7 +6,7 @@ const session = require('express-session');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 4321;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -116,7 +116,7 @@ const documents = [
         id: 1,
         title: 'MoU Kerjasama Riset dengan Universitas Indonesia',
         description: 'Kerjasama penelitian bidang teknologi informasi dan artificial intelligence dengan Fakultas Ilmu Komputer UI',
-        documentLink: 'https://docs.google.com/document/d/1NTqsV_qr9A8chX9W3eHf1eHRgG-IoVDXoouQpAA4rOU/edit?usp=sharing',
+        documentLink: 'https://1drv.ms/w/c/6d75eaf249eafc00/IQCJLlDGIcqaTrtoWKB0mtnIAZqdjroYoVVKrbxcV1w9wQg?e=4HcbtF',
         createdBy: 'Diki Putra, S.T',
         createdAt: '2026-01-12',
         currentStatus: 'in_review',
@@ -132,7 +132,7 @@ const documents = [
         id: 2,
         title: 'MoU Program Pelatihan dan Sertifikasi Profesional',
         description: 'Kerjasama dengan lembaga pelatihan untuk program sertifikasi profesional bagi mahasiswa',
-        documentLink: 'https://docs.google.com/document/d/1NTqsV_qr9A8chX9W3eHf1eHRgG-IoVDXoouQpAA4rOU/edit?usp=sharing',
+        documentLink: 'https://1drv.ms/w/c/6d75eaf249eafc00/IQCJLlDGIcqaTrtoWKB0mtnIAZqdjroYoVVKrbxcV1w9wQg?e=4HcbtF',
         createdBy: 'Jusriani, SH',
         createdAt: '2026-01-10',
         currentStatus: 'in_review',
@@ -148,7 +148,7 @@ const documents = [
         id: 3,
         title: 'MoU Kerjasama Penelitian dengan Institut Teknologi Nasional',
         description: 'Kerjasama penelitian bersama dalam bidang teknologi terapan dan inovasi industri',
-        documentLink: 'https://docs.google.com/document/d/1NTqsV_qr9A8chX9W3eHf1eHRgG-IoVDXoouQpAA4rOU/edit?usp=sharing',
+        documentLink: 'https://1drv.ms/w/c/6d75eaf249eafc00/IQCJLlDGIcqaTrtoWKB0mtnIAZqdjroYoVVKrbxcV1w9wQg?e=4HcbtF',
         createdBy: 'Ardillah Anggraini Sirtin, S.TP',
         createdAt: '2026-01-08',
         currentStatus: 'in_review',
@@ -164,7 +164,7 @@ const documents = [
         id: 4,
         title: 'MoU International Collaboration - National University of Singapore',
         description: 'Student exchange program dan joint research dalam sustainable development',
-        documentLink: 'https://docs.google.com/document/d/1NTqsV_qr9A8chX9W3eHf1eHRgG-IoVDXoouQpAA4rOU/edit?usp=sharing',
+        documentLink: 'https://1drv.ms/w/c/6d75eaf249eafc00/IQCJLlDGIcqaTrtoWKB0mtnIAZqdjroYoVVKrbxcV1w9wQg?e=4HcbtF',
         createdBy: 'Irham Gunadi, S.T',
         createdAt: '2026-01-05',
         currentStatus: 'approved',
@@ -180,7 +180,7 @@ const documents = [
         id: 5,
         title: 'MoU Pengembangan Sistem Informasi Akademik Terpadu',
         description: 'Kerjasama pengembangan platform sistem informasi terintegrasi dengan vendor teknologi',
-        documentLink: 'https://docs.google.com/document/d/1NTqsV_qr9A8chX9W3eHf1eHRgG-IoVDXoouQpAA4rOU/edit?usp=sharing',
+        documentLink: 'https://1drv.ms/w/c/6d75eaf249eafc00/IQCJLlDGIcqaTrtoWKB0mtnIAZqdjroYoVVKrbxcV1w9wQg?e=4HcbtF',
         createdBy: 'Reka Permata Zalen, S.TP',
         createdAt: '2026-01-12',
         currentStatus: 'in_review',
@@ -196,7 +196,7 @@ const documents = [
         id: 6,
         title: 'MoU Kerjasama Magang Industri - PT Telkom Indonesia',
         description: 'Kerjasama program magang mahasiswa dan rekrutmen bersama dengan PT Telkom Indonesia',
-        documentLink: 'https://docs.google.com/document/d/1NTqsV_qr9A8chX9W3eHf1eHRgG-IoVDXoouQpAA4rOU/edit?usp=sharing',
+        documentLink: 'https://1drv.ms/w/c/6d75eaf249eafc00/IQCJLlDGIcqaTrtoWKB0mtnIAZqdjroYoVVKrbxcV1w9wQg?e=4HcbtF',
         createdBy: 'M Zuhri, SE',
         createdAt: '2025-12-28',
         currentStatus: 'approved',

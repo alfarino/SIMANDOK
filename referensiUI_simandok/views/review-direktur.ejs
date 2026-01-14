@@ -1,35 +1,35 @@
-<div class="w-full">
+<div class="w-full px-2 sm:px-4">
     <!-- Header -->
     <div class="mb-6">
-        <h1 class="text-3xl font-bold mb-2" style="color: #262626">Review Dokumen - Direktur</h1>
-        <p class="text-gray-600">Dokumen yang memerlukan persetujuan Anda sebagai Direktur</p>
+        <h1 class="text-2xl sm:text-3xl font-bold mb-2 text-gray-800">Review Dokumen - Direktur</h1>
+        <p class="text-gray-600 text-sm sm:text-base">Dokumen yang memerlukan persetujuan Anda sebagai Direktur</p>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
         <!-- Total Dokumen Perlu Review -->
-        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-xl p-6 text-white">
+        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-xl p-4 sm:p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm opacity-90 mb-1">Perlu Direview</p>
-                    <h3 class="text-4xl font-bold"><%= documents.length %></h3>
+                    <p class="text-xs sm:text-sm opacity-90 mb-1">Perlu Direview</p>
+                    <h3 class="text-3xl sm:text-4xl font-bold"><%= documents.length %></h3>
                     <p class="text-xs opacity-80 mt-1">Total dokumen</p>
                 </div>
-                <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-10 h-10 sm:w-12 sm:h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
         </div>
 
         <!-- Belum Dilihat -->
-        <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-xl p-6 text-white">
+        <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-xl p-4 sm:p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm opacity-90 mb-1">Belum Dilihat</p>
-                    <h3 class="text-4xl font-bold"><%= pendingDocs.length %></h3>
+                    <p class="text-xs sm:text-sm opacity-90 mb-1">Belum Dilihat</p>
+                    <h3 class="text-3xl sm:text-4xl font-bold"><%= pendingDocs.length %></h3>
                     <p class="text-xs opacity-80 mt-1">Dokumen baru</p>
                 </div>
-                <svg class="w-12 h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-10 h-10 sm:w-12 sm:h-12 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                         stroke-linecap="round"
                         stroke-linejoin="round"

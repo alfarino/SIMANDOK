@@ -1,5 +1,5 @@
 {
-    "name": "sistem-pemantauan-progress",
+    "name": "sistem-pemantauan-dokumen",
     "version": "1.0.0",
     "description": "Sistem pemantauan progress dokumen dengan workflow approval",
     "main": "app.js",
@@ -15,15 +15,15 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "express": "^4.18.2",
-        "ejs": "^3.1.9",
-        "express-session": "^1.17.3",
-        "multer": "^1.4.5-lts.1",
-        "dotenv": "^16.3.1",
         "body-parser": "^1.20.2",
-        "cookie-parser": "^1.4.6"
+        "cookie-parser": "^1.4.6",
+        "dotenv": "^16.3.1",
+        "ejs": "^3.1.9",
+        "express": "^4.18.2",
+        "express-session": "^1.17.3",
+        "multer": "^1.4.5-lts.1"
     },
     "devDependencies": {
-        "nodemon": "^3.0.1"
+        "nodemon": "^3.1.11"
     }
 }

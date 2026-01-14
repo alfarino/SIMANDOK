@@ -1,12 +1,12 @@
-<div class="w-full mx-auto px-2 py-6">
+<div class="w-full mx-auto px-2 sm:px-4 py-4 sm:py-6">
     <div class="max-w-5xl mx-auto">
         <!-- Header -->
-        <div class="mb-6 flex items-center justify-between">
+        <div class="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-                <h1 class="text-3xl font-bold" style="color: #262626">Review Dokumen</h1>
-                <p class="text-gray-600 mt-2">Tinjau dan berikan keputusan pada dokumen ini</p>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Review Dokumen</h1>
+                <p class="text-gray-600 mt-2 text-sm sm:text-base">Tinjau dan berikan keputusan pada dokumen ini</p>
             </div>
-            <a href="/" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+            <a href="/" class="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm sm:text-base">
                 <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -14,27 +14,27 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <!-- Main Content - Document Info & Preview -->
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2 space-y-4 sm:space-y-6">
                 <!-- Document Information Card -->
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <div class="px-6 py-4" style="background-color: #00341f">
-                        <h2 class="text-lg font-semibold text-white">Informasi Dokumen</h2>
+                    <div class="px-4 sm:px-6 py-3 sm:py-4" style="background-color: #00341f">
+                        <h2 class="text-base sm:text-lg font-semibold text-white">Informasi Dokumen</h2>
                     </div>
-                    <div class="p-6 space-y-4">
+                    <div class="p-4 sm:p-6 space-y-3 sm:space-y-4">
                         <div>
                             <label class="text-xs font-medium text-gray-500 uppercase">Judul Dokumen</label>
-                            <p class="text-lg font-semibold text-gray-900 mt-1"><%= document.title %></p>
+                            <p class="text-base sm:text-lg font-semibold text-gray-900 mt-1"><%= document.title %></p>
                         </div>
                         <div>
                             <label class="text-xs font-medium text-gray-500 uppercase">Deskripsi</label>
-                            <p class="text-gray-700 mt-1"><%= document.description %></p>
+                            <p class="text-sm sm:text-base text-gray-700 mt-1"><%= document.description %></p>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <label class="text-xs font-medium text-gray-500 uppercase">Dibuat Oleh</label>
-                                <p class="text-gray-900 mt-1"><%= document.createdBy %></p>
+                                <p class="text-sm sm:text-base text-gray-900 mt-1"><%= document.createdBy %></p>
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-gray-500 uppercase">Tanggal Pengajuan</label>

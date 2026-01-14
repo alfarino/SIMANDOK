@@ -1,20 +1,20 @@
-<div class="w-full mx-auto px-2 py-6">
+<div class="w-full mx-auto px-2 sm:px-4 py-4 sm:py-6">
     <div class="max-w-3xl mx-auto">
         <!-- Header -->
         <div class="mb-6">
-            <h1 class="text-3xl font-bold" style="color: #262626">Pengajuan Dokumen Baru</h1>
-            <p class="text-gray-600 mt-2">Lengkapi form di bawah untuk mengajukan dokumen baru</p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Pengajuan Dokumen Baru</h1>
+            <p class="text-gray-600 mt-2 text-sm sm:text-base">Lengkapi form di bawah untuk mengajukan dokumen baru</p>
         </div>
 
         <!-- Form -->
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             <!-- Form Header -->
-            <div class="px-6 py-4" style="background-color: #00341f">
-                <h2 class="text-lg font-semibold text-white">Informasi Dokumen</h2>
+            <div class="px-4 sm:px-6 py-3 sm:py-4" style="background-color: #00341f">
+                <h2 class="text-base sm:text-lg font-semibold text-white">Informasi Dokumen</h2>
             </div>
 
             <!-- Form Body -->
-            <form id="documentForm" class="p-6 space-y-6" enctype="multipart/form-data">
+            <form id="documentForm" class="p-4 sm:p-6 space-y-4 sm:space-y-6" enctype="multipart/form-data">
                 <!-- Judul Dokumen -->
                 <div>
                     <label for="title" class="block text-sm font-medium text-gray-700 mb-2"> Judul Dokumen <span class="text-red-500">*</span> </label>
@@ -23,7 +23,7 @@
                         id="title"
                         name="title"
                         required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-sm"
                         style="focus:ring-color: #00341F"
                         placeholder="Masukkan judul dokumen" />
                     <p class="mt-1 text-xs text-gray-500">Contoh: Proposal Pengadaan Komputer, Laporan Bulanan, dll.</p>
@@ -37,7 +37,7 @@
                         name="description"
                         required
                         rows="4"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent resize-none"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent resize-none text-sm"
                         style="focus:ring-color: #00341F"
                         placeholder="Jelaskan secara singkat tentang dokumen ini"></textarea>
                     <p class="mt-1 text-xs text-gray-500">Berikan penjelasan yang jelas mengenai isi dan tujuan dokumen</p>
