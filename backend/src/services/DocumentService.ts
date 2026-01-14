@@ -254,7 +254,10 @@ class DocumentService {
      * Get personal stats for approver
      */
     async getPersonalStats(userId: number) {
-        const [pendingForMe, approvedByMe, rejectedByMeActive] = await Promise.all([
+        const ApprovalHistory = (await import('../entities/ApprovalHistory')).default;
+        const { ActionType } = await import('../types/enums');
+
+        const [pendingForMe, approvedByMeCount, rejectedByMeActive] = await Promise.all([
             // Dokumen yang pending untuk user ini
             DocumentApproval.count({
                 where: {
@@ -263,10 +266,15 @@ class DocumentService {
                     approval_status: { [Op.in]: [ApprovalStatus.DIAJUKAN, ApprovalStatus.DIBUKA, ApprovalStatus.DIPERIKSA] },
                 },
             }),
-            // Dokumen yang sudah di-approve oleh user (via DocumentApprover)
-            // For now, count via history would be more accurate but complex
-            // Using DocumentApprover table
-            0, // Will be updated via ApprovalHistory
+            // Count distinct documents approved by user from approval_history
+            ApprovalHistory.count({
+                where: {
+                    action_by_user_id: userId,
+                    action_type: ActionType.APPROVED
+                },
+                distinct: true,
+                col: 'document_id'
+            }),
             // Dokumen yang masih dalam status DITOLAK dan ditolak oleh user ini
             DocumentApproval.count({
                 where: {
@@ -279,10 +287,63 @@ class DocumentService {
 
         return {
             pendingForMe,
-            approvedByMe,
-            rejectedByMeActive, // Only count docs still in DITOLAK status
+            approvedByMe: approvedByMeCount,
+            rejectedByMeActive  // Only count docs still in DITOLAK status
         };
     }
+
+    /**
+     * Get documents approved by user (from approval_history)
+     */
+    async getApprovedByUser(userId: number) {
+        const ApprovalHistory = (await import('../entities/ApprovalHistory')).default;
+        const { ActionType } = await import('../types/enums');
+
+        // Get distinct document IDs approved by this user
+        const approvals = await ApprovalHistory.findAll({
+            where: {
+                action_by_user_id: userId,
+                action_type: ActionType.APPROVED
+            },
+            attributes: ['document_id'],
+            group: ['document_id'],
+            raw: true
+        });
+
+        const docIds = approvals.map((a: any) => a.document_id);
+        if (docIds.length === 0) return [];
+
+        return DocumentApproval.findAll({
+            where: {
+                id: { [Op.in]: docIds },
+                is_archived: false
+            },
+            include: [
+                { model: User, as: 'uploadedBy', attributes: ['id', 'full_name', 'email'] },
+                { model: User, as: 'currentApprover', attributes: ['id', 'full_name', 'email'] }
+            ],
+            order: [['updated_at', 'DESC']]
+        });
+    }
+
+    /**
+     * Get documents rejected by user (still in DITOLAK status)
+     */
+    async getRejectedByUser(userId: number) {
+        return DocumentApproval.findAll({
+            where: {
+                rejection_by_user_id: userId,
+                approval_status: ApprovalStatus.DITOLAK,
+                is_archived: false
+            },
+            include: [
+                { model: User, as: 'uploadedBy', attributes: ['id', 'full_name', 'email'] },
+                { model: User, as: 'currentApprover', attributes: ['id', 'full_name', 'email'] }
+            ],
+            order: [['updated_at', 'DESC']]
+        });
+    }
+
     /**
      * Get documents ready to print for Staff (their own uploads)
      */

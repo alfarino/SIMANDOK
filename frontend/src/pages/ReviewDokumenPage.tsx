@@ -6,7 +6,7 @@ import {
     CircularProgress, Alert, Tooltip, Card, CardContent, Grid
 } from '@mui/material'
 import {
-    OpenInNew, Refresh, CheckCircle, Cancel, HourglassEmpty, RateReview
+    OpenInNew, Refresh, CheckCircle, Cancel, HourglassEmpty, RateReview, History
 } from '@mui/icons-material'
 
 interface Document {
@@ -33,6 +33,7 @@ const STATUS_COLORS: Record<string, 'default' | 'warning' | 'info' | 'success' |
     DIPERIKSA: 'info',
     DISETUJUI: 'success',
     SIAP_CETAK: 'success',
+    SUDAH_DICETAK: 'success',
     DITOLAK: 'error'
 }
 
@@ -43,6 +44,7 @@ const STATUS_LABELS: Record<string, string> = {
     DIPERIKSA: 'Diperiksa',
     DISETUJUI: 'Disetujui',
     SIAP_CETAK: 'Siap Cetak',
+    SUDAH_DICETAK: 'Sudah Dicetak',
     DITOLAK: 'Ditolak'
 }
 
@@ -51,33 +53,41 @@ type TabValue = 'pending' | 'approved' | 'rejected'
 export default function ReviewDokumenPage() {
     const navigate = useNavigate()
     const [pendingDocs, setPendingDocs] = useState<Document[]>([])
+    const [approvedDocs, setApprovedDocs] = useState<Document[]>([])
+    const [rejectedDocs, setRejectedDocs] = useState<Document[]>([])
     const [stats, setStats] = useState<PersonalStats | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [tab, setTab] = useState<TabValue>('pending')
-    const [successMsg, setSuccessMsg] = useState('')
 
     useEffect(() => {
         fetchData()
     }, [])
 
     const fetchData = async () => {
+        setLoading(true)
         try {
             const token = localStorage.getItem('token')
             const headers = { 'Authorization': `Bearer ${token}` }
 
-            const [pendingRes, statsRes] = await Promise.all([
+            const [pendingRes, statsRes, approvedRes, rejectedRes] = await Promise.all([
                 fetch('/api/dashboard/pending', { headers }),
-                fetch('/api/dashboard/personal-stats', { headers })
+                fetch('/api/dashboard/personal-stats', { headers }),
+                fetch('/api/dashboard/approved-by-me', { headers }),
+                fetch('/api/dashboard/rejected-by-me', { headers })
             ])
 
             if (!pendingRes.ok || !statsRes.ok) throw new Error('Failed to fetch data')
 
             const pendingData = await pendingRes.json()
             const statsData = await statsRes.json()
+            const approvedData = approvedRes.ok ? await approvedRes.json() : { data: [] }
+            const rejectedData = rejectedRes.ok ? await rejectedRes.json() : { data: [] }
 
             setPendingDocs(pendingData.data || [])
             setStats(statsData.data)
+            setApprovedDocs(approvedData.data || [])
+            setRejectedDocs(rejectedData.data || [])
         } catch (err) {
             setError('Gagal memuat data')
             console.error(err)
@@ -94,6 +104,33 @@ export default function ReviewDokumenPage() {
         })
     }
 
+    const getCurrentDocs = () => {
+        switch (tab) {
+            case 'pending': return pendingDocs
+            case 'approved': return approvedDocs
+            case 'rejected': return rejectedDocs
+            default: return []
+        }
+    }
+
+    const getTableColor = () => {
+        switch (tab) {
+            case 'pending': return '#fff3e0'
+            case 'approved': return '#e8f5e9'
+            case 'rejected': return '#ffebee'
+            default: return '#f5f5f5'
+        }
+    }
+
+    const getEmptyMessage = () => {
+        switch (tab) {
+            case 'pending': return '🎉 Tidak ada dokumen yang perlu direview'
+            case 'approved': return '📄 Belum ada dokumen yang Anda setujui'
+            case 'rejected': return '📄 Tidak ada dokumen yang Anda tolak (pending revisi)'
+            default: return 'Tidak ada dokumen'
+        }
+    }
+
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -101,6 +138,8 @@ export default function ReviewDokumenPage() {
             </Box>
         )
     }
+
+    const currentDocs = getCurrentDocs()
 
     return (
         <Box>
@@ -118,7 +157,6 @@ export default function ReviewDokumenPage() {
             </Box>
 
             {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
-            {successMsg && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccessMsg('')}>{successMsg}</Alert>}
 
             {/* Stats Cards */}
             <Grid container spacing={2} sx={{ mb: 4 }}>
@@ -159,62 +197,62 @@ export default function ReviewDokumenPage() {
 
             {/* Tabs */}
             <Tabs value={tab} onChange={(_, v) => setTab(v as TabValue)} sx={{ mb: 3 }}>
-                <Tab label="Perlu Review" value="pending" />
-                <Tab label="Sudah Disetujui" value="approved" />
-                <Tab label="Ditolak" value="rejected" />
+                <Tab label={`Perlu Review (${pendingDocs.length})`} value="pending" />
+                <Tab label={`Sudah Disetujui (${approvedDocs.length})`} value="approved" />
+                <Tab label={`Ditolak (${rejectedDocs.length})`} value="rejected" />
             </Tabs>
 
-            {/* Pending Documents Table */}
-            {tab === 'pending' && (
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow sx={{ backgroundColor: '#fff3e0' }}>
-                                <TableCell width={50}><strong>No</strong></TableCell>
-                                <TableCell><strong>Judul</strong></TableCell>
-                                <TableCell><strong>Dari</strong></TableCell>
-                                <TableCell><strong>Tanggal</strong></TableCell>
-                                <TableCell><strong>Status</strong></TableCell>
-                                <TableCell width={200}><strong>Aksi</strong></TableCell>
+            {/* Documents Table */}
+            <TableContainer component={Paper}>
+                <Table>
+                    <TableHead>
+                        <TableRow sx={{ backgroundColor: getTableColor() }}>
+                            <TableCell width={50}><strong>No</strong></TableCell>
+                            <TableCell><strong>Judul</strong></TableCell>
+                            <TableCell><strong>Dari</strong></TableCell>
+                            <TableCell><strong>Tanggal</strong></TableCell>
+                            <TableCell><strong>Status</strong></TableCell>
+                            <TableCell width={200}><strong>Aksi</strong></TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {currentDocs.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                                    <Typography color="text.secondary">
+                                        {getEmptyMessage()}
+                                    </Typography>
+                                </TableCell>
                             </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {pendingDocs.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                                        <Typography color="text.secondary">
-                                            🎉 Tidak ada dokumen yang perlu direview
-                                        </Typography>
+                        ) : (
+                            currentDocs.map((doc, index) => (
+                                <TableRow key={doc.id} hover>
+                                    <TableCell>{index + 1}</TableCell>
+                                    <TableCell>
+                                        <Typography fontWeight="medium">{doc.document_name}</Typography>
+                                        {doc.document_description && (
+                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                                {doc.document_description.substring(0, 50)}...
+                                            </Typography>
+                                        )}
                                     </TableCell>
-                                </TableRow>
-                            ) : (
-                                pendingDocs.map((doc, index) => (
-                                    <TableRow key={doc.id} hover>
-                                        <TableCell>{index + 1}</TableCell>
-                                        <TableCell>
-                                            <Typography fontWeight="medium">{doc.document_name}</Typography>
-                                            {doc.document_description && (
-                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                                    {doc.document_description.substring(0, 50)}...
-                                                </Typography>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>{doc.uploadedBy?.full_name || '-'}</TableCell>
-                                        <TableCell>{formatDate(doc.created_at)}</TableCell>
-                                        <TableCell>
-                                            <Chip
-                                                label={STATUS_LABELS[doc.approval_status] || doc.approval_status}
-                                                color={STATUS_COLORS[doc.approval_status] || 'default'}
-                                                size="small"
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                <Tooltip title="Buka Dokumen">
-                                                    <IconButton size="small" color="primary" href={doc.document_link} target="_blank">
-                                                        <OpenInNew />
-                                                    </IconButton>
-                                                </Tooltip>
+                                    <TableCell>{doc.uploadedBy?.full_name || '-'}</TableCell>
+                                    <TableCell>{formatDate(doc.created_at)}</TableCell>
+                                    <TableCell>
+                                        <Chip
+                                            label={STATUS_LABELS[doc.approval_status] || doc.approval_status}
+                                            color={STATUS_COLORS[doc.approval_status] || 'default'}
+                                            size="small"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                            <Tooltip title="Buka Dokumen">
+                                                <IconButton size="small" color="primary" href={doc.document_link} target="_blank">
+                                                    <OpenInNew />
+                                                </IconButton>
+                                            </Tooltip>
+                                            {tab === 'pending' ? (
                                                 <Button
                                                     size="small"
                                                     variant="contained"
@@ -224,24 +262,24 @@ export default function ReviewDokumenPage() {
                                                 >
                                                     Review
                                                 </Button>
-                                            </Box>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-
-            {/* Placeholder for other tabs */}
-            {tab !== 'pending' && (
-                <Paper sx={{ p: 4, textAlign: 'center' }}>
-                    <Typography color="text.secondary">
-                        Fitur riwayat akan ditampilkan di sini
-                    </Typography>
-                </Paper>
-            )}
+                                            ) : (
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    startIcon={<History />}
+                                                    onClick={() => navigate(`/review-history/${doc.id}`)}
+                                                >
+                                                    Riwayat
+                                                </Button>
+                                            )}
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </TableContainer>
         </Box>
     )
 }

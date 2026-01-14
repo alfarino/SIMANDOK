@@ -3,25 +3,21 @@ import { useNavigate } from 'react-router-dom'
 import {
     Box, Typography, Paper, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Chip, Button, IconButton,
-    CircularProgress, Alert, Collapse, Stepper, Step, StepLabel
+    CircularProgress, Alert, Collapse, Card, CardContent
 } from '@mui/material'
 import {
     OpenInNew, History, ExpandMore, ExpandLess, Refresh,
-    CheckCircle, Cancel, AccessTime, HourglassEmpty
+    CheckCircle, Cancel, AccessTime, Description, Send, Replay
 } from '@mui/icons-material'
 
-interface Approver {
+interface HistoryItem {
     id: number
-    approver_user_id: number
-    sequence_order: number
-    status: string
-    viewed_at: string | null
-    approved_at: string | null
+    action_type: string
+    from_status: string | null
+    to_status: string | null
     remarks: string | null
-    approver: {
-        full_name: string
-        role: { role_name: string }
-    }
+    created_at: string
+    actionBy: { id: number; full_name: string }
 }
 
 interface Document {
@@ -34,7 +30,6 @@ interface Document {
     total_approvers: number
     created_at: string
     currentApprover?: { full_name: string }
-    approvers?: Approver[]
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -59,12 +54,49 @@ const STATUS_COLORS: Record<string, 'default' | 'primary' | 'secondary' | 'error
     SUDAH_DICETAK: 'success'
 }
 
+const ACTION_LABELS: Record<string, string> = {
+    CREATED: 'Dibuat',
+    SUBMITTED: 'Diajukan',
+    OPENED: 'Dibuka',
+    APPROVED: 'Disetujui',
+    REJECTED: 'Ditolak',
+    REVISED: 'Direvisi',
+    RESUBMITTED: 'Diajukan Ulang',
+    PRINTED: 'Dicetak',
+    ARCHIVED: 'Diarsipkan',
+    RESTORED: 'Dipulihkan'
+}
+
+const getActionIcon = (actionType: string) => {
+    switch (actionType) {
+        case 'CREATED': return <Description color="primary" fontSize="small" />
+        case 'SUBMITTED': return <Send color="info" fontSize="small" />
+        case 'OPENED': return <AccessTime color="warning" fontSize="small" />
+        case 'APPROVED': return <CheckCircle color="success" fontSize="small" />
+        case 'REJECTED': return <Cancel color="error" fontSize="small" />
+        case 'RESUBMITTED': return <Replay color="primary" fontSize="small" />
+        default: return <AccessTime color="action" fontSize="small" />
+    }
+}
+
+const getActionColor = (actionType: string): 'default' | 'primary' | 'success' | 'error' | 'warning' | 'info' => {
+    switch (actionType) {
+        case 'APPROVED': return 'success'
+        case 'REJECTED': return 'error'
+        case 'SUBMITTED': case 'RESUBMITTED': return 'info'
+        case 'OPENED': return 'warning'
+        default: return 'default'
+    }
+}
+
 export default function DokumenDiajukanPage() {
     const navigate = useNavigate()
     const [documents, setDocuments] = useState<Document[]>([])
+    const [historyCache, setHistoryCache] = useState<Record<number, HistoryItem[]>>({})
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [expandedRow, setExpandedRow] = useState<number | null>(null)
+    const [loadingHistory, setLoadingHistory] = useState<number | null>(null)
 
     useEffect(() => {
         fetchDocuments()
@@ -94,6 +126,26 @@ export default function DokumenDiajukanPage() {
         }
     }
 
+    const fetchHistory = async (docId: number) => {
+        if (historyCache[docId]) return // Already cached
+
+        setLoadingHistory(docId)
+        try {
+            const token = localStorage.getItem('token')
+            const res = await fetch(`/api/documents/${docId}/history`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            if (res.ok) {
+                const data = await res.json()
+                setHistoryCache(prev => ({ ...prev, [docId]: data.data || [] }))
+            }
+        } catch (err) {
+            console.error('Failed to fetch history', err)
+        } finally {
+            setLoadingHistory(null)
+        }
+    }
+
     const formatDate = (dateStr: string) => {
         return new Date(dateStr).toLocaleDateString('id-ID', {
             day: '2-digit',
@@ -102,15 +154,23 @@ export default function DokumenDiajukanPage() {
         })
     }
 
-    const toggleExpand = (docId: number) => {
-        setExpandedRow(expandedRow === docId ? null : docId)
+    const formatDateTime = (dateStr: string) => {
+        return new Date(dateStr).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        })
     }
 
-    const getStepStatus = (approver: Approver) => {
-        if (approver.status === 'APPROVED') return 'completed'
-        if (approver.status === 'REJECTED') return 'error'
-        if (approver.viewed_at) return 'active'
-        return 'pending'
+    const toggleExpand = async (docId: number) => {
+        if (expandedRow === docId) {
+            setExpandedRow(null)
+        } else {
+            setExpandedRow(docId)
+            await fetchHistory(docId)
+        }
     }
 
     if (loading) {
@@ -220,31 +280,71 @@ export default function DokumenDiajukanPage() {
                                                     <Typography variant="subtitle2" gutterBottom>
                                                         📍 Perjalanan Dokumen
                                                     </Typography>
-                                                    <Stepper alternativeLabel sx={{ mt: 2 }}>
-                                                        {doc.approvers?.map((approver) => {
-                                                            const stepStatus = getStepStatus(approver)
-                                                            return (
-                                                                <Step key={approver.id} completed={stepStatus === 'completed'}>
-                                                                    <StepLabel
-                                                                        error={stepStatus === 'error'}
-                                                                        StepIconComponent={() => (
-                                                                            stepStatus === 'completed' ? <CheckCircle color="success" /> :
-                                                                                stepStatus === 'error' ? <Cancel color="error" /> :
-                                                                                    stepStatus === 'active' ? <AccessTime color="warning" /> :
-                                                                                        <HourglassEmpty color="disabled" />
+
+                                                    {loadingHistory === doc.id ? (
+                                                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                                                            <CircularProgress size={24} />
+                                                        </Box>
+                                                    ) : historyCache[doc.id]?.length === 0 ? (
+                                                        <Typography color="text.secondary" variant="body2">
+                                                            Belum ada riwayat
+                                                        </Typography>
+                                                    ) : (
+                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
+                                                            {/* Current Position Card - Always at top */}
+                                                            <Card variant="outlined" sx={{ bgcolor: '#e3f2fd', borderColor: 'primary.main' }}>
+                                                                <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                        <AccessTime color="primary" fontSize="small" />
+                                                                        <Chip
+                                                                            label="Posisi Saat Ini"
+                                                                            color="primary"
+                                                                            size="small"
+                                                                        />
+                                                                        <Typography variant="body2">
+                                                                            {doc.approval_status === 'DITOLAK' ? (
+                                                                                <>Menunggu revisi dari <strong>Anda (Staff)</strong></>
+                                                                            ) : doc.approval_status === 'SIAP_CETAK' || doc.approval_status === 'SUDAH_DICETAK' ? (
+                                                                                <>Dokumen <strong>Selesai</strong></>
+                                                                            ) : doc.currentApprover?.full_name ? (
+                                                                                <>Sedang di <strong>{doc.currentApprover.full_name}</strong></>
+                                                                            ) : (
+                                                                                <>Status: <strong>{STATUS_LABELS[doc.approval_status] || doc.approval_status}</strong></>
+                                                                            )}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                </CardContent>
+                                                            </Card>
+
+                                                            {/* History Cards - Newest first */}
+                                                            {[...historyCache[doc.id]].reverse().map((item) => (
+                                                                <Card key={item.id} variant="outlined" sx={{ bgcolor: 'white' }}>
+                                                                    <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
+                                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                            {getActionIcon(item.action_type)}
+                                                                            <Chip
+                                                                                label={ACTION_LABELS[item.action_type] || item.action_type}
+                                                                                color={getActionColor(item.action_type)}
+                                                                                size="small"
+                                                                                variant="outlined"
+                                                                            />
+                                                                            <Typography variant="body2">
+                                                                                oleh <strong>{item.actionBy?.full_name || 'Unknown'}</strong>
+                                                                            </Typography>
+                                                                            <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>
+                                                                                {formatDateTime(item.created_at)}
+                                                                            </Typography>
+                                                                        </Box>
+                                                                        {item.remarks && (
+                                                                            <Typography variant="caption" color="text.secondary" sx={{ ml: 3.5, display: 'block', mt: 0.5 }}>
+                                                                                💬 {item.remarks}
+                                                                            </Typography>
                                                                         )}
-                                                                    >
-                                                                        <Typography variant="caption" display="block">
-                                                                            {approver.approver?.role?.role_name}
-                                                                        </Typography>
-                                                                        <Typography variant="caption" color="text.secondary">
-                                                                            {approver.approver?.full_name}
-                                                                        </Typography>
-                                                                    </StepLabel>
-                                                                </Step>
-                                                            )
-                                                        })}
-                                                    </Stepper>
+                                                                    </CardContent>
+                                                                </Card>
+                                                            ))}
+                                                        </Box>
+                                                    )}
                                                 </Box>
                                             </Collapse>
                                         </TableCell>

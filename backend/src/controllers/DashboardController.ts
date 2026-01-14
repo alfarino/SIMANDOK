@@ -112,6 +112,34 @@ class DashboardController {
             next(error);
         }
     }
+
+    async getApprovedByMe(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.userId;
+            const documents = await DocumentService.getApprovedByUser(userId);
+
+            res.json({
+                success: true,
+                data: documents
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getRejectedByMe(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.userId;
+            const documents = await DocumentService.getRejectedByUser(userId);
+
+            res.json({
+                success: true,
+                data: documents
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new DashboardController();

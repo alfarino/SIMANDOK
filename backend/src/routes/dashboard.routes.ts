@@ -22,6 +22,12 @@ router.get('/personal-stats', DashboardController.getPersonalStats);
 // GET /api/dashboard/pending
 router.get('/pending', DashboardController.getPending);
 
+// GET /api/dashboard/approved-by-me
+router.get('/approved-by-me', DashboardController.getApprovedByMe);
+
+// GET /api/dashboard/rejected-by-me
+router.get('/rejected-by-me', DashboardController.getRejectedByMe);
+
 // GET /api/dashboard/recent
 router.get('/recent', DashboardController.getRecent);
 
