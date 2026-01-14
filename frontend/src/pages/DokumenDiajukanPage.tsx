@@ -317,7 +317,7 @@ export default function DokumenDiajukanPage() {
                                                             </Card>
 
                                                             {/* History Cards - Newest first */}
-                                                            {[...historyCache[doc.id]].reverse().map((item) => (
+                                                            {(historyCache[doc.id] || []).slice().reverse().map((item) => (
                                                                 <Card key={item.id} variant="outlined" sx={{ bgcolor: 'white' }}>
                                                                     <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
                                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
