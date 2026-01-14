@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
     Box, Typography, Paper, Button, CircularProgress, Alert,
-    TextField, Divider, Grid
+    TextField, Divider, Grid, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material'
 import {
-    ArrowBack, OpenInNew, CheckCircle, Cancel, AccessTime,
+    ArrowBack, OpenInNew, CheckCircle, Cancel,
     Person, CalendarToday
 } from '@mui/icons-material'
 
@@ -35,9 +35,10 @@ export default function DocumentReviewPage() {
     const [document, setDocument] = useState<Document | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
-    const [success, setSuccess] = useState('')
     const [notes, setNotes] = useState('')
     const [actionLoading, setActionLoading] = useState(false)
+    const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+    const [successMessage, setSuccessMessage] = useState('')
 
     useEffect(() => {
         fetchDocument()
@@ -96,8 +97,8 @@ export default function DocumentReviewPage() {
 
             if (!res.ok) throw new Error('Gagal menyetujui')
 
-            setSuccess('Dokumen berhasil disetujui!')
-            setTimeout(() => navigate('/my-documents'), 1500)
+            setSuccessMessage('Dokumen berhasil disetujui!')
+            setShowSuccessDialog(true)
         } catch (err) {
             setError('Gagal menyetujui dokumen')
         } finally {
@@ -127,8 +128,8 @@ export default function DocumentReviewPage() {
 
             if (!res.ok) throw new Error('Gagal menolak')
 
-            setSuccess('Instruksi revisi berhasil dikirim ke staff')
-            setTimeout(() => navigate('/my-documents'), 1500)
+            setSuccessMessage('Instruksi revisi berhasil dikirim ke staff')
+            setShowSuccessDialog(true)
         } catch (err) {
             setError('Gagal mengirim instruksi revisi')
         } finally {
@@ -146,15 +147,6 @@ export default function DocumentReviewPage() {
         })
     }
 
-    const getApproverStatus = (approver: Approver) => {
-        if (approver.approval_status === 'APPROVED') {
-            return { icon: <CheckCircle color="success" />, text: 'Disetujui', color: 'success' }
-        }
-        if (approver.approval_status === 'PENDING') {
-            return { icon: <AccessTime color="warning" />, text: 'Menunggu', color: 'warning' }
-        }
-        return { icon: <Cancel color="error" />, text: 'Ditolak', color: 'error' }
-    }
 
     if (loading) {
         return (
@@ -195,7 +187,6 @@ export default function DocumentReviewPage() {
             </Box>
 
             {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
-            {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
             <Grid container spacing={3}>
                 {/* Left - Document Info */}
@@ -265,65 +256,35 @@ export default function DocumentReviewPage() {
                     </Paper>
                 </Grid>
 
-                {/* Right - Workflow & Actions */}
+                {/* Right - Action Panel */}
                 <Grid item xs={12} md={4}>
-                    {/* Workflow Progress */}
-                    <Paper sx={{ mb: 3 }}>
-                        <Box sx={{ bgcolor: 'primary.main', color: 'white', px: 3, py: 2 }}>
-                            <Typography variant="h6">Status Progress</Typography>
-                        </Box>
-                        <Box sx={{ p: 2 }}>
-                            {document.approvers?.map((approver) => {
-                                const status = getApproverStatus(approver)
-                                return (
-                                    <Box key={approver.id} sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-                                        <Box sx={{ mr: 2 }}>{status.icon}</Box>
-                                        <Box sx={{ flex: 1 }}>
-                                            <Typography fontWeight="medium">{approver.full_name}</Typography>
-                                            <Typography variant="caption" color="text.secondary">
-                                                {approver.role?.role_name}
-                                            </Typography>
-                                            <Typography variant="caption" display="block" color={`${status.color}.main`}>
-                                                {status.text}
-                                                {approver.approved_at && ` - ${formatDate(approver.approved_at)}`}
-                                            </Typography>
-                                            {approver.remarks && (
-                                                <Typography variant="caption" color="text.secondary" fontStyle="italic">
-                                                    "{approver.remarks}"
-                                                </Typography>
-                                            )}
-                                        </Box>
-                                    </Box>
-                                )
-                            })}
-                        </Box>
-                    </Paper>
-
-                    {/* Action Buttons */}
-                    <Paper>
+                    {/* Action Buttons - Expanded to fill space */}
+                    <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                         <Box sx={{ bgcolor: 'primary.main', color: 'white', px: 3, py: 2 }}>
                             <Typography variant="h6">Tindakan</Typography>
                         </Box>
-                        <Box sx={{ p: 3 }}>
+                        <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
                             <TextField
                                 fullWidth
                                 multiline
-                                rows={3}
-                                label="Catatan"
+                                rows={6}
+                                label="Catatan Review"
                                 placeholder="Tambahkan catatan atau instruksi revisi..."
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                                 helperText="Opsional untuk setujui, wajib untuk revisi"
-                                sx={{ mb: 2 }}
+                                sx={{ mb: 3 }}
                             />
+                            <Box sx={{ flex: 1 }} />
                             <Button
                                 fullWidth
                                 variant="contained"
                                 color="success"
+                                size="large"
                                 startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : <CheckCircle />}
                                 onClick={handleApprove}
                                 disabled={actionLoading}
-                                sx={{ mb: 1 }}
+                                sx={{ mb: 2 }}
                             >
                                 Setujui Dokumen
                             </Button>
@@ -331,21 +292,43 @@ export default function DocumentReviewPage() {
                                 fullWidth
                                 variant="contained"
                                 color="warning"
+                                size="large"
                                 startIcon={<Cancel />}
                                 onClick={handleReject}
                                 disabled={actionLoading}
+                                sx={{ mb: 2 }}
                             >
                                 Minta Revisi
                             </Button>
                             <Divider sx={{ my: 2 }} />
                             <Typography variant="caption" color="text.secondary" textAlign="center" display="block">
-                                ℹ️ Setujui: Dokumen lanjut ke tahap berikutnya<br />
-                                Minta Revisi: Staff akan merevisi sesuai catatan
+                                ℹ️ <strong>Setujui</strong>: Dokumen lanjut ke tahap berikutnya<br />
+                                <strong>Minta Revisi</strong>: Staff akan merevisi sesuai catatan
                             </Typography>
                         </Box>
                     </Paper>
                 </Grid>
             </Grid>
+
+            {/* Success Dialog */}
+            <Dialog open={showSuccessDialog} onClose={() => { }} disableEscapeKeyDown>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircle color="success" />
+                    Berhasil
+                </DialogTitle>
+                <DialogContent>
+                    <Typography>{successMessage}</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        variant="contained"
+                        onClick={() => navigate('/review-dokumen')}
+                        autoFocus
+                    >
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     )
 }

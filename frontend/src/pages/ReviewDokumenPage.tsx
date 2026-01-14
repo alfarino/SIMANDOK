@@ -48,7 +48,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 type TabValue = 'pending' | 'approved' | 'rejected'
 
-export default function MyDocumentsPage() {
+export default function ReviewDokumenPage() {
     const navigate = useNavigate()
     const [pendingDocs, setPendingDocs] = useState<Document[]>([])
     const [stats, setStats] = useState<PersonalStats | null>(null)
@@ -106,7 +106,7 @@ export default function MyDocumentsPage() {
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h4" fontWeight="bold">
-                    Dokumen Saya
+                    Review Dokumen
                 </Typography>
                 <Button
                     variant="outlined"

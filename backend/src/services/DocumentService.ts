@@ -200,7 +200,10 @@ class DocumentService {
                 }
             }),
             DocumentApproval.count({
-                where: { is_archived: false, approval_status: ApprovalStatus.SIAP_CETAK }
+                where: {
+                    is_archived: false,
+                    approval_status: { [Op.in]: [ApprovalStatus.SIAP_CETAK, ApprovalStatus.SUDAH_DICETAK] }
+                }
             })
         ]);
 
@@ -303,6 +306,21 @@ class DocumentService {
                 { model: User, as: 'currentApprover', attributes: ['id', 'full_name', 'email'] }
             ],
             order: [['updated_at', 'DESC']]
+        });
+    }
+
+    /**
+     * Get document approval history for journey display
+     */
+    async getDocumentHistory(documentId: number) {
+        const ApprovalHistory = (await import('../entities/ApprovalHistory')).default;
+
+        return ApprovalHistory.findAll({
+            where: { document_id: documentId },
+            include: [
+                { model: User, as: 'actionBy', attributes: ['id', 'full_name', 'email'] }
+            ],
+            order: [['created_at', 'ASC']]
         });
     }
 }

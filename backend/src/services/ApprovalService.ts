@@ -359,6 +359,71 @@ class ApprovalService {
 
         return document;
     }
+
+    /**
+     * Resubmit a rejected document (Staff only)
+     */
+    async resubmitDocument(documentId: number, userId: number, remarks?: string): Promise<DocumentApproval> {
+        const document = await DocumentApproval.findByPk(documentId);
+
+        if (!document) {
+            throw new AppError('Dokumen tidak ditemukan', 404, 'DOCUMENT_NOT_FOUND');
+        }
+
+        if (document.approval_status !== ApprovalStatus.DITOLAK) {
+            throw new AppError('Hanya dokumen yang ditolak yang dapat diajukan ulang', 400, 'NOT_REJECTED');
+        }
+
+        // Verify user is the uploader (Staff)
+        if (document.uploaded_by_user_id !== userId) {
+            throw new AppError('Hanya Staff yang mengupload yang dapat mengajukan ulang', 403, 'UNAUTHORIZED');
+        }
+
+        const t = await sequelize.transaction();
+        try {
+            // Get first approver
+            const firstApprover = await DocumentApprover.findOne({
+                where: { document_id: documentId, sequence_order: 1 }
+            });
+
+            // Reset all approvers to PENDING
+            await DocumentApprover.update(
+                { status: ApproverStatus.PENDING, approved_at: undefined, remarks: undefined, viewed_at: undefined },
+                { where: { document_id: documentId }, transaction: t }
+            );
+
+            // Update document status back to DIAJUKAN
+            await document.update({
+                approval_status: ApprovalStatus.DIAJUKAN,
+                current_approver_id: firstApprover?.approver_user_id || undefined,
+                current_sequence: 1,
+                rejection_reason: undefined,
+                rejection_by_user_id: undefined
+            }, { transaction: t });
+
+            // Log history with RESUBMITTED action
+            await ApprovalHistory.create({
+                document_id: documentId,
+                action_by_user_id: userId,
+                action_type: ActionType.RESUBMITTED,
+                from_status: ApprovalStatus.DITOLAK,
+                to_status: ApprovalStatus.DIAJUKAN,
+                remarks: remarks
+            }, { transaction: t });
+
+            await t.commit();
+
+            // Notify first approver
+            if (firstApprover) {
+                await NotificationService.notifyNewDocument(documentId, document.document_name, firstApprover.approver_user_id);
+            }
+
+            return document;
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
+    }
 }
 
 export default new ApprovalService();

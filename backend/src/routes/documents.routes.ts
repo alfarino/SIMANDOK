@@ -37,4 +37,10 @@ router.post('/:id/view', DocumentController.markAsViewed);
 // POST /api/documents/:id/printed - Mark as printed by Staff
 router.post('/:id/printed', requireStaffOnly, DocumentController.markAsPrinted);
 
+// GET /api/documents/:id/history - Get approval history for journey display
+router.get('/:id/history', DocumentController.getHistory);
+
+// POST /api/documents/:id/resubmit - Resubmit rejected document (Staff only)
+router.post('/:id/resubmit', requireStaffOnly, DocumentController.resubmit);
+
 export default router;

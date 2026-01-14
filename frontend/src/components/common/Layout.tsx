@@ -62,12 +62,13 @@ export default function Layout() {
         const isStaff = hierarchyLevel === 1
         const isApprover = hierarchyLevel >= 2 && hierarchyLevel <= 4
 
-        // Staff menu - can upload documents, see their uploads
+        // Staff menu - can upload documents, track their submissions
         if (isStaff) {
             return [
                 { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
                 { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
                 { text: 'Upload', icon: <Upload />, path: '/upload' },
+                { text: 'Dokumen Diajukan', icon: <AssignmentInd />, path: '/dokumen-diajukan' },
                 { text: 'Arsip', icon: <Archive />, path: '/archive' }
             ]
         }
@@ -77,7 +78,7 @@ export default function Layout() {
             return [
                 { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
                 { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
-                { text: 'Dokumen Saya', icon: <AssignmentInd />, path: '/my-documents' },
+                { text: 'Review Dokumen', icon: <AssignmentInd />, path: '/review-dokumen' },
                 { text: 'Arsip', icon: <Archive />, path: '/archive' }
             ]
         }

@@ -178,6 +178,38 @@ class DocumentController {
             next(error);
         }
     }
+
+    async resubmit(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const { remarks } = req.body;
+            const userId = req.user!.userId;
+
+            const document = await ApprovalService.resubmitDocument(parseInt(id), userId, remarks);
+
+            res.json({
+                success: true,
+                message: 'Dokumen berhasil diajukan ulang',
+                data: document
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getHistory(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { id } = req.params;
+            const history = await DocumentService.getDocumentHistory(parseInt(id));
+
+            res.json({
+                success: true,
+                data: history
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new DocumentController();
