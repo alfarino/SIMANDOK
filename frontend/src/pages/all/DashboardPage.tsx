@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Grid, Card, CardContent, Paper, CircularProgress, Alert, IconButton } from '@mui/material';
 import { Description, Pending, CheckCircle, Fullscreen, FullscreenExit, ErrorOutline } from '@mui/icons-material';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { Bar, Pie } from 'react-chartjs-2';
 
 // Register ChartJS components
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend, ChartDataLabels);
 
 interface GlobalStats {
     total: number;
@@ -20,81 +21,41 @@ interface WorkflowItem {
     pendingCount: number;
 }
 
-interface StatusItem {
-    status: string;
-    label: string;
-    count: number;
-    hierarchyLevel?: number;
-}
+// Konstanta warna utama dashboard
+const PRIMARY_COLOR = '#1B5E20';
+const ACCENT_COLOR = '#FDD835';
+const APPROVED_COLOR = '#2E7D32';
+const REJECTED_COLOR = '#F57C00';
 
-// Palette Warna SIMANDOK
-const PRIMARY_COLOR = '#00341f'; // Hijau tua utama
-const ACCENT_COLOR = '#f0d323'; // Kuning aksen utama
-const APPROVED_COLOR = '#296374'; // Teal untuk disetujui
-const REJECTED_COLOR = '#D97706'; // Oranye tua untuk perlu revisi
-
-// Warna untuk workflow berdasarkan level hierarki
-const WORKFLOW_COLORS = [
-    '#0C2C55', // Kepala Seksi - Biru tua
-    '#296374', // Kepala Subdit - Teal
-    '#629FAD', // Direktur - Biru muda
+// Pemetaan warna chart berdasarkan tingkat hierarki organisasi
+// Digunakan konsisten untuk bar chart dan pie chart
+const CHART_COLORS = [
+    '#1976D2', // Level 2: Kepala Seksi
+    '#00897B', // Level 3: Kepala Subdit
+    '#66BB6A', // Level 4: Direktur
 ];
 
-// Font size constants untuk fullscreen vs normal mode
+// Ukuran font responsif untuk mode normal dan fullscreen
 const FONT_SIZES = {
-    statsValue: { fullscreen: '2rem', normal: '3rem' },
-    statsLabel: { fullscreen: '0.7rem', normal: '0.875rem' },
-    statsCaption: { fullscreen: '0.65rem', normal: '0.75rem' },
-    icon: { fullscreen: 32, normal: 48 },
+    statsValue: { fullscreen: '1.75rem', normal: '2.25rem' },
+    statsLabel: { fullscreen: '0.75rem', normal: '0.875rem' },
+    statsCaption: { fullscreen: '0.7rem', normal: '0.75rem' },
+    icon: { fullscreen: 36, normal: 48 },
 };
 
-// Helper function untuk mendapatkan warna berdasarkan hierarchy level
-const getWorkflowColorByLevel = (hierarchyLevel: number): string => {
+// Fungsi untuk mendapatkan warna chart berdasarkan hierarchy level
+const getChartColorByLevel = (hierarchyLevel: number): string => {
     const colorMap: Record<number, string> = {
-        1: WORKFLOW_COLORS[0], // Kasi - Biru tua
-        2: WORKFLOW_COLORS[1], // Kasubdit - Teal
-        3: WORKFLOW_COLORS[2], // Direktur - Biru muda
+        2: CHART_COLORS[0],
+        3: CHART_COLORS[1],
+        4: CHART_COLORS[2],
     };
     return colorMap[hierarchyLevel] || '#6C757D';
-};
-
-// Color mapping untuk status chart - disesuaikan dengan DocumentsPage
-const getStatusColor = (status: string, hierarchyLevel?: number): string => {
-    // Warna untuk status in-review berdasarkan hierarchy level
-    if (status.startsWith('IN_REVIEW_LEVEL_')) {
-        return hierarchyLevel ? getWorkflowColorByLevel(hierarchyLevel) : '#6C757D';
-    }
-
-    // Warna untuk status lainnya - mengikuti standar DocumentsPage
-    const colorMap: Record<string, string> = {
-        // success (hijau) - sama dengan Chip color="success"
-        APPROVED: '#2e7d32',
-        DISETUJUI: '#2e7d32',
-        SIAP_CETAK: '#2e7d32',
-
-        // error (merah) - sama dengan Chip color="error"
-        REJECTED: '#d32f2f',
-        DITOLAK: '#d32f2f',
-
-        // info (biru) - sama dengan Chip color="info"
-        DIBUKA: '#0288d1',
-        DIPERIKSA: '#0288d1',
-
-        // warning (oranye) - sama dengan Chip color="warning"
-        DIAJUKAN: '#ed6c02',
-
-        // default (abu-abu) - sama dengan Chip color="default"
-        DRAFT: '#616161',
-        ARCHIVED: '#616161',
-    };
-
-    return colorMap[status] || '#6C757D';
 };
 
 export default function DashboardPage() {
     const [globalStats, setGlobalStats] = useState<GlobalStats | null>(null);
     const [workflowData, setWorkflowData] = useState<WorkflowItem[]>([]);
-    const [statusData, setStatusData] = useState<StatusItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -103,12 +64,17 @@ export default function DashboardPage() {
     useEffect(() => {
         fetchDashboardData();
 
-        // Listen for fullscreen change
         const handleFullscreenChange = () => {
             setIsFullscreen(!!document.fullscreenElement);
         };
         document.addEventListener('fullscreenchange', handleFullscreenChange);
-        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            }
+        };
     }, []);
 
     const fetchDashboardData = async () => {
@@ -116,21 +82,16 @@ export default function DashboardPage() {
             const token = localStorage.getItem('token');
             const headers = { Authorization: `Bearer ${token}` };
 
-            const [globalRes, workflowRes, statusRes] = await Promise.all([
-                fetch('/api/dashboard/global-stats', { headers }),
-                fetch('/api/dashboard/workflow-distribution', { headers }),
-                fetch('/api/dashboard/status-distribution', { headers }),
-            ]);
+            const [globalRes, workflowRes] = await Promise.all([fetch('/api/dashboard/global-stats', { headers }), fetch('/api/dashboard/workflow-distribution', { headers })]);
 
-            if (!globalRes.ok || !workflowRes.ok || !statusRes.ok) {
+            if (!globalRes.ok || !workflowRes.ok) {
                 throw new Error('Failed to fetch dashboard data');
             }
 
-            const [globalData, workflowDataRes, statusDataRes] = await Promise.all([globalRes.json(), workflowRes.json(), statusRes.json()]);
+            const [globalData, workflowDataRes] = await Promise.all([globalRes.json(), workflowRes.json()]);
 
             setGlobalStats(globalData.data);
             setWorkflowData(workflowDataRes.data);
-            setStatusData(statusDataRes.data);
         } catch (err) {
             setError('Gagal memuat data dashboard');
             console.error(err);
@@ -159,30 +120,31 @@ export default function DashboardPage() {
         return <Alert severity="error">{error}</Alert>;
     }
 
-    // Prepare chart data
     const workflowChartData = {
         labels: workflowData.map((item) => item.roleName),
         datasets: [
             {
                 label: 'Dokumen Sedang Direview',
                 data: workflowData.map((item) => item.pendingCount),
-                backgroundColor: workflowData.map((item) => getWorkflowColorByLevel(item.hierarchyLevel)),
-                borderColor: workflowData.map((item) => getWorkflowColorByLevel(item.hierarchyLevel)),
+                backgroundColor: workflowData.map((item) => getChartColorByLevel(item.hierarchyLevel)),
+                borderColor: workflowData.map((item) => getChartColorByLevel(item.hierarchyLevel)),
                 borderWidth: 2,
                 borderRadius: 8,
             },
         ],
     };
 
-    const statusChartData = {
-        labels: statusData.map((item) => item.label),
+    const leaderWorkflowData = workflowData.filter((item) => item.hierarchyLevel >= 2 && item.hierarchyLevel <= 4);
+
+    const leaderChartData = {
+        labels: leaderWorkflowData.map((item) => item.roleName),
         datasets: [
             {
-                data: statusData.map((item) => item.count),
-                backgroundColor: statusData.map((item) => getStatusColor(item.status, item.hierarchyLevel)),
+                data: leaderWorkflowData.map((item) => item.pendingCount),
+                backgroundColor: leaderWorkflowData.map((item) => getChartColorByLevel(item.hierarchyLevel)),
                 borderColor: '#ffffff',
-                borderWidth: 3,
-                hoverOffset: 10,
+                borderWidth: 4,
+                hoverOffset: 15,
             },
         ],
     };
@@ -192,45 +154,78 @@ export default function DashboardPage() {
         maintainAspectRatio: false,
         plugins: {
             legend: { display: false },
+            datalabels: {
+                display: false,
+            },
             tooltip: {
-                backgroundColor: '#262626',
-                titleFont: { size: 14 },
+                backgroundColor: 'rgba(33, 33, 33, 0.95)',
+                titleFont: { size: 14, weight: 'bold' as const },
                 bodyFont: { size: 13 },
                 padding: 12,
                 cornerRadius: 8,
+                displayColors: true,
             },
         },
         scales: {
             y: {
                 beginAtZero: true,
-                ticks: { stepSize: 1, font: { size: 12 } },
-                grid: { color: '#e5e7eb' },
+                ticks: {
+                    stepSize: 1,
+                    font: { size: 12 },
+                    color: '#757575',
+                },
+                grid: { color: '#E0E0E0' },
             },
             x: {
-                ticks: { font: { size: 11 } },
+                ticks: {
+                    font: { size: 11 },
+                    color: '#757575',
+                },
                 grid: { display: false },
             },
         },
     };
 
-    const statusChartOptions = {
+    const leaderChartOptions = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
             legend: {
                 position: 'bottom' as const,
                 labels: {
-                    padding: 15,
-                    font: { size: 12 },
+                    padding: isFullscreen ? 12 : 20,
+                    font: {
+                        size: isFullscreen ? 14 : 16,
+                        weight: 'bold' as const,
+                    },
                     usePointStyle: true,
                     pointStyle: 'circle' as const,
+                    color: '#212121',
+                    boxWidth: isFullscreen ? 12 : 15,
+                    boxHeight: isFullscreen ? 12 : 15,
                 },
             },
+            datalabels: {
+                color: '#FFFFFF',
+                font: {
+                    size: isFullscreen ? 24 : 20,
+                    weight: 'bold' as const,
+                },
+                formatter: (value: number, context: any) => {
+                    const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+                    if (total === 0 || value === 0) return '';
+                    const percentage = ((value / total) * 100).toFixed(0);
+                    return `${value}\n(${percentage}%)`;
+                },
+                textAlign: 'center' as const,
+                anchor: 'center' as const,
+                offset: 0,
+            },
             tooltip: {
-                backgroundColor: '#262626',
-                titleFont: { size: 14 },
-                bodyFont: { size: 13 },
-                padding: 12,
+                backgroundColor: 'rgba(33, 33, 33, 0.95)',
+                titleFont: { size: 16, weight: 'bold' as const },
+                bodyFont: { size: 14 },
+                padding: 14,
                 cornerRadius: 8,
                 callbacks: {
                     label: function (context: any) {
@@ -238,26 +233,24 @@ export default function DashboardPage() {
                         const value = context.parsed || 0;
                         const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
                         const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                        return `${label}: ${value} (${percentage}%)`;
+                        return `${label}: ${value} dokumen (${percentage}%)`;
                     },
                 },
             },
         },
-        cutout: '65%',
     };
 
     return (
         <Box
             ref={containerRef}
             sx={{
-                bgcolor: isFullscreen ? '#EDEDCE' : 'transparent',
+                bgcolor: isFullscreen ? '#FAFAFA' : 'transparent',
                 p: isFullscreen ? 2.5 : 0,
                 height: isFullscreen ? '100vh' : 'auto',
                 overflow: isFullscreen ? 'hidden' : 'visible',
                 display: isFullscreen ? 'flex' : 'block',
                 flexDirection: isFullscreen ? 'column' : undefined,
             }}>
-            {/* Header */}
             <Box
                 sx={{
                     display: 'flex',
@@ -266,15 +259,15 @@ export default function DashboardPage() {
                     mb: isFullscreen ? 1.5 : 3,
                     flexShrink: 0,
                 }}>
-                <Typography variant={isFullscreen ? 'h5' : 'h4'} fontWeight="bold" sx={{ color: '#1f2937' }}>
+                <Typography variant={isFullscreen ? 'h5' : 'h4'} fontWeight="bold" sx={{ color: 'text.primary' }}>
                     Dashboard Statistik Dokumen
                 </Typography>
                 <IconButton
                     onClick={toggleFullscreen}
                     sx={{
-                        bgcolor: PRIMARY_COLOR,
+                        bgcolor: 'primary.main',
                         color: 'white',
-                        '&:hover': { bgcolor: '#004d2e' },
+                        '&:hover': { bgcolor: 'primary.dark' },
                         borderRadius: 2,
                         px: 2,
                     }}>
@@ -285,7 +278,6 @@ export default function DashboardPage() {
                 </IconButton>
             </Box>
 
-            {/* Stats Cards */}
             <Grid
                 container
                 spacing={isFullscreen ? 1.5 : 3}
@@ -297,49 +289,49 @@ export default function DashboardPage() {
                 <Grid item xs={12} sm={6} md={3}>
                     <Card
                         sx={{
-                            bgcolor: PRIMARY_COLOR,
-                            color: 'white',
+                            bgcolor: 'white',
+                            borderLeft: `4px solid ${PRIMARY_COLOR}`,
                             height: '100%',
-                            transition: 'transform 0.2s',
-                            '&:hover': { transform: 'scale(1.05)' },
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: 3,
+                            },
                         }}>
-                        <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', p: isFullscreen ? 1.5 : 2 }}>
-                            <Box>
-                                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 0.5, fontSize: isFullscreen ? FONT_SIZES.statsLabel.fullscreen : FONT_SIZES.statsLabel.normal }}>
-                                    Total Dokumen
-                                </Typography>
-                                <Typography variant="h3" fontWeight="bold" sx={{ color: ACCENT_COLOR, fontSize: isFullscreen ? FONT_SIZES.statsValue.fullscreen : FONT_SIZES.statsValue.normal }}>
-                                    {globalStats?.total || 0}
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', fontSize: isFullscreen ? FONT_SIZES.statsCaption.fullscreen : FONT_SIZES.statsCaption.normal }}>
-                                    Dokumen diajukan
-                                </Typography>
+                        <CardContent sx={{ p: isFullscreen ? 2 : 3 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: 'text.secondary',
+                                            mb: 1,
+                                            fontSize: isFullscreen ? FONT_SIZES.statsLabel.fullscreen : FONT_SIZES.statsLabel.normal,
+                                            fontWeight: 500,
+                                        }}>
+                                        Total Dokumen
+                                    </Typography>
+                                    <Typography
+                                        variant="h3"
+                                        fontWeight="bold"
+                                        sx={{
+                                            color: PRIMARY_COLOR,
+                                            fontSize: isFullscreen ? FONT_SIZES.statsValue.fullscreen : FONT_SIZES.statsValue.normal,
+                                            mb: 0.5,
+                                        }}>
+                                        {globalStats?.total || 0}
+                                    </Typography>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: 'text.secondary',
+                                            fontSize: isFullscreen ? FONT_SIZES.statsCaption.fullscreen : FONT_SIZES.statsCaption.normal,
+                                        }}>
+                                        Dokumen diajukan
+                                    </Typography>
+                                </Box>
+                                <Description sx={{ fontSize: isFullscreen ? FONT_SIZES.icon.fullscreen : FONT_SIZES.icon.normal, color: PRIMARY_COLOR, opacity: 0.2 }} />
                             </Box>
-                            <Description sx={{ fontSize: isFullscreen ? FONT_SIZES.icon.fullscreen : FONT_SIZES.icon.normal, opacity: 0.5 }} />
-                        </CardContent>
-                    </Card>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <Card
-                        sx={{
-                            bgcolor: ACCENT_COLOR,
-                            height: '100%',
-                            transition: 'transform 0.2s',
-                            '&:hover': { transform: 'scale(1.05)' },
-                        }}>
-                        <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', p: isFullscreen ? 1.5 : 2 }}>
-                            <Box>
-                                <Typography variant="body2" sx={{ color: PRIMARY_COLOR, fontWeight: 600, mb: 0.5, fontSize: isFullscreen ? FONT_SIZES.statsLabel.fullscreen : FONT_SIZES.statsLabel.normal }}>
-                                    Sedang Direview
-                                </Typography>
-                                <Typography variant="h3" fontWeight="bold" sx={{ color: PRIMARY_COLOR, fontSize: isFullscreen ? FONT_SIZES.statsValue.fullscreen : FONT_SIZES.statsValue.normal }}>
-                                    {globalStats?.pending || 0}
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: PRIMARY_COLOR, opacity: 0.8, fontSize: isFullscreen ? FONT_SIZES.statsCaption.fullscreen : FONT_SIZES.statsCaption.normal }}>
-                                    Dalam proses
-                                </Typography>
-                            </Box>
-                            <Pending sx={{ fontSize: isFullscreen ? FONT_SIZES.icon.fullscreen : FONT_SIZES.icon.normal, opacity: 0.4, color: PRIMARY_COLOR }} />
                         </CardContent>
                     </Card>
                 </Grid>
@@ -347,55 +339,151 @@ export default function DashboardPage() {
                     <Card
                         sx={{
                             bgcolor: 'white',
-                            border: `4px solid ${REJECTED_COLOR}`,
+                            borderLeft: `4px solid ${ACCENT_COLOR}`,
                             height: '100%',
-                            transition: 'transform 0.2s',
-                            '&:hover': { transform: 'scale(1.05)' },
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: 3,
+                            },
                         }}>
-                        <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', p: isFullscreen ? 1.5 : 2 }}>
-                            <Box>
-                                <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 600, mb: 0.5, fontSize: isFullscreen ? FONT_SIZES.statsLabel.fullscreen : FONT_SIZES.statsLabel.normal }}>
-                                    Perlu Revisi
-                                </Typography>
-                                <Typography variant="h3" fontWeight="bold" sx={{ color: REJECTED_COLOR, fontSize: isFullscreen ? FONT_SIZES.statsValue.fullscreen : FONT_SIZES.statsValue.normal }}>
-                                    {globalStats?.rejected || 0}
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: '#6b7280', fontSize: isFullscreen ? FONT_SIZES.statsCaption.fullscreen : FONT_SIZES.statsCaption.normal }}>
-                                    Harus diperbaiki
-                                </Typography>
+                        <CardContent sx={{ p: isFullscreen ? 2 : 3 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: 'text.secondary',
+                                            mb: 1,
+                                            fontSize: isFullscreen ? FONT_SIZES.statsLabel.fullscreen : FONT_SIZES.statsLabel.normal,
+                                            fontWeight: 500,
+                                        }}>
+                                        Sedang Direview
+                                    </Typography>
+                                    <Typography
+                                        variant="h3"
+                                        fontWeight="bold"
+                                        sx={{
+                                            color: ACCENT_COLOR,
+                                            fontSize: isFullscreen ? FONT_SIZES.statsValue.fullscreen : FONT_SIZES.statsValue.normal,
+                                            mb: 0.5,
+                                        }}>
+                                        {globalStats?.pending || 0}
+                                    </Typography>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: 'text.secondary',
+                                            fontSize: isFullscreen ? FONT_SIZES.statsCaption.fullscreen : FONT_SIZES.statsCaption.normal,
+                                        }}>
+                                        Dalam proses
+                                    </Typography>
+                                </Box>
+                                <Pending sx={{ fontSize: isFullscreen ? FONT_SIZES.icon.fullscreen : FONT_SIZES.icon.normal, color: ACCENT_COLOR, opacity: 0.2 }} />
                             </Box>
-                            <ErrorOutline sx={{ fontSize: isFullscreen ? FONT_SIZES.icon.fullscreen : FONT_SIZES.icon.normal, opacity: 0.5, color: REJECTED_COLOR }} />
                         </CardContent>
                     </Card>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <Card
                         sx={{
-                            bgcolor: APPROVED_COLOR,
-                            color: 'white',
+                            bgcolor: 'white',
+                            borderLeft: `4px solid ${REJECTED_COLOR}`,
                             height: '100%',
-                            transition: 'transform 0.2s',
-                            '&:hover': { transform: 'scale(1.05)' },
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: 3,
+                            },
                         }}>
-                        <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', p: isFullscreen ? 1.5 : 2 }}>
-                            <Box>
-                                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600, mb: 0.5, fontSize: isFullscreen ? FONT_SIZES.statsLabel.fullscreen : FONT_SIZES.statsLabel.normal }}>
-                                    Disetujui
-                                </Typography>
-                                <Typography variant="h3" fontWeight="bold" sx={{ fontSize: isFullscreen ? FONT_SIZES.statsValue.fullscreen : FONT_SIZES.statsValue.normal }}>
-                                    {globalStats?.approved || 0}
-                                </Typography>
-                                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', fontSize: isFullscreen ? FONT_SIZES.statsCaption.fullscreen : FONT_SIZES.statsCaption.normal }}>
-                                    Dokumen selesai
-                                </Typography>
+                        <CardContent sx={{ p: isFullscreen ? 2 : 3 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: 'text.secondary',
+                                            mb: 1,
+                                            fontSize: isFullscreen ? FONT_SIZES.statsLabel.fullscreen : FONT_SIZES.statsLabel.normal,
+                                            fontWeight: 500,
+                                        }}>
+                                        Perlu Revisi
+                                    </Typography>
+                                    <Typography
+                                        variant="h3"
+                                        fontWeight="bold"
+                                        sx={{
+                                            color: REJECTED_COLOR,
+                                            fontSize: isFullscreen ? FONT_SIZES.statsValue.fullscreen : FONT_SIZES.statsValue.normal,
+                                            mb: 0.5,
+                                        }}>
+                                        {globalStats?.rejected || 0}
+                                    </Typography>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: 'text.secondary',
+                                            fontSize: isFullscreen ? FONT_SIZES.statsCaption.fullscreen : FONT_SIZES.statsCaption.normal,
+                                        }}>
+                                        Harus diperbaiki
+                                    </Typography>
+                                </Box>
+                                <ErrorOutline sx={{ fontSize: isFullscreen ? FONT_SIZES.icon.fullscreen : FONT_SIZES.icon.normal, color: REJECTED_COLOR, opacity: 0.2 }} />
                             </Box>
-                            <CheckCircle sx={{ fontSize: isFullscreen ? FONT_SIZES.icon.fullscreen : FONT_SIZES.icon.normal, opacity: 0.5 }} />
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <Card
+                        sx={{
+                            bgcolor: 'white',
+                            borderLeft: `4px solid ${APPROVED_COLOR}`,
+                            height: '100%',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: 3,
+                            },
+                        }}>
+                        <CardContent sx={{ p: isFullscreen ? 2 : 3 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: 'text.secondary',
+                                            mb: 1,
+                                            fontSize: isFullscreen ? FONT_SIZES.statsLabel.fullscreen : FONT_SIZES.statsLabel.normal,
+                                            fontWeight: 500,
+                                        }}>
+                                        Disetujui
+                                    </Typography>
+                                    <Typography
+                                        variant="h3"
+                                        fontWeight="bold"
+                                        sx={{
+                                            color: APPROVED_COLOR,
+                                            fontSize: isFullscreen ? FONT_SIZES.statsValue.fullscreen : FONT_SIZES.statsValue.normal,
+                                            mb: 0.5,
+                                        }}>
+                                        {globalStats?.approved || 0}
+                                    </Typography>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: 'text.secondary',
+                                            fontSize: isFullscreen ? FONT_SIZES.statsCaption.fullscreen : FONT_SIZES.statsCaption.normal,
+                                        }}>
+                                        Dokumen selesai
+                                    </Typography>
+                                </Box>
+                                <CheckCircle sx={{ fontSize: isFullscreen ? FONT_SIZES.icon.fullscreen : FONT_SIZES.icon.normal, color: APPROVED_COLOR, opacity: 0.2 }} />
+                            </Box>
                         </CardContent>
                     </Card>
                 </Grid>
             </Grid>
 
-            {/* Charts */}
             <Grid
                 container
                 spacing={isFullscreen ? 1.5 : 3}
@@ -405,13 +493,23 @@ export default function DashboardPage() {
                 }}>
                 <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
                     <Paper
+                        elevation={1}
                         sx={{
-                            p: isFullscreen ? 1.5 : 3,
+                            p: isFullscreen ? 2 : 3,
                             width: '100%',
                             display: 'flex',
                             flexDirection: 'column',
+                            borderRadius: 2,
                         }}>
-                        <Typography variant="h6" fontWeight="semibold" sx={{ color: '#1f2937', mb: isFullscreen ? 1 : 2, flexShrink: 0, fontSize: isFullscreen ? '1rem' : '1.25rem' }}>
+                        <Typography
+                            variant="h6"
+                            fontWeight={600}
+                            sx={{
+                                color: 'text.primary',
+                                mb: isFullscreen ? 1.5 : 2,
+                                flexShrink: 0,
+                                fontSize: isFullscreen ? '1rem' : '1.25rem',
+                            }}>
                             Distribusi per Tahapan
                         </Typography>
                         <Box
@@ -421,7 +519,7 @@ export default function DashboardPage() {
                                 position: 'relative',
                             }}>
                             {workflowData.length > 0 ? (
-                                <Bar data={workflowChartData} options={workflowChartOptions} />
+                                <Bar key={`bar-${isFullscreen}`} data={workflowChartData} options={workflowChartOptions} />
                             ) : (
                                 <Box sx={{ textAlign: 'center', py: 4 }}>
                                     <Typography color="text.secondary">🎉 Tidak ada dokumen dalam review</Typography>
@@ -432,14 +530,24 @@ export default function DashboardPage() {
                 </Grid>
                 <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
                     <Paper
+                        elevation={1}
                         sx={{
-                            p: isFullscreen ? 1.5 : 3,
+                            p: isFullscreen ? 2 : 3,
                             width: '100%',
                             display: 'flex',
                             flexDirection: 'column',
+                            borderRadius: 2,
                         }}>
-                        <Typography variant="h6" fontWeight="semibold" sx={{ color: '#1f2937', mb: isFullscreen ? 1 : 2, flexShrink: 0, fontSize: isFullscreen ? '1rem' : '1.25rem' }}>
-                            Status & Distribusi Dokumen
+                        <Typography
+                            variant="h6"
+                            fontWeight={600}
+                            sx={{
+                                color: 'text.primary',
+                                mb: isFullscreen ? 1.5 : 2,
+                                flexShrink: 0,
+                                fontSize: isFullscreen ? '1rem' : '1.25rem',
+                            }}>
+                            Sebaran Dokumen di Pimpinan
                         </Typography>
                         <Box
                             sx={{
@@ -447,11 +555,11 @@ export default function DashboardPage() {
                                 minHeight: isFullscreen ? 0 : 300,
                                 position: 'relative',
                             }}>
-                            {statusData.length > 0 ? (
-                                <Doughnut data={statusChartData} options={statusChartOptions} />
+                            {leaderWorkflowData.length > 0 ? (
+                                <Pie key={`pie-${isFullscreen}`} data={leaderChartData} options={leaderChartOptions} />
                             ) : (
                                 <Box sx={{ textAlign: 'center', py: 4 }}>
-                                    <Typography color="text.secondary">Tidak ada data status</Typography>
+                                    <Typography color="text.secondary">🎉 Tidak ada dokumen sedang direview pimpinan</Typography>
                                 </Box>
                             )}
                         </Box>

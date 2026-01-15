@@ -18,14 +18,14 @@ class UserService {
         return User.findAll({
             include: [{ model: Role, as: 'role' }],
             attributes: { exclude: ['password_hash'] },
-            order: [['id', 'ASC']]
+            order: [['id', 'ASC']],
         });
     }
 
     async findById(id: number) {
         const user = await User.findByPk(id, {
             include: [{ model: Role, as: 'role' }],
-            attributes: { exclude: ['password_hash'] }
+            attributes: { exclude: ['password_hash'] },
         });
 
         if (!user) {
@@ -38,7 +38,7 @@ class UserService {
     async findByEmail(email: string) {
         return User.findOne({
             where: { email },
-            include: [{ model: Role, as: 'role' }]
+            include: [{ model: Role, as: 'role' }],
         });
     }
 
@@ -60,7 +60,7 @@ class UserService {
             role_id: data.roleId,
             team: data.team,
             phone: data.phone,
-            is_active: true
+            is_active: true,
         });
 
         return this.findById(user.id);
@@ -77,22 +77,25 @@ class UserService {
 
     async getRoles() {
         return Role.findAll({
-            order: [['hierarchy_level', 'ASC']]
+            order: [['hierarchy_level', 'ASC']],
         });
     }
 
     // Get users that can be approvers (level > 1, i.e., not Staff)
     async getApprovers() {
         return User.findAll({
-            include: [{
-                model: Role,
-                as: 'role',
-                where: {
-                    hierarchy_level: { [require('sequelize').Op.gt]: 1 }
-                }
-            }],
+            include: [
+                {
+                    model: Role,
+                    as: 'role',
+                    where: {
+                        hierarchy_level: { [require('sequelize').Op.gt]: 1 },
+                    },
+                },
+            ],
             attributes: { exclude: ['password_hash'] },
-            where: { is_active: true }
+            where: { is_active: true },
+            order: [[{ model: Role, as: 'role' }, 'hierarchy_level', 'ASC']],
         });
     }
 
@@ -102,16 +105,18 @@ class UserService {
         const userLevel = user.role?.hierarchy_level || 1;
 
         return User.findAll({
-            include: [{
-                model: Role,
-                as: 'role',
-                where: {
-                    hierarchy_level: { [require('sequelize').Op.gt]: userLevel }
-                }
-            }],
+            include: [
+                {
+                    model: Role,
+                    as: 'role',
+                    where: {
+                        hierarchy_level: { [require('sequelize').Op.gt]: userLevel },
+                    },
+                },
+            ],
             attributes: { exclude: ['password_hash'] },
             where: { is_active: true },
-            order: [[{ model: Role, as: 'role' }, 'hierarchy_level', 'ASC']]
+            order: [[{ model: Role, as: 'role' }, 'hierarchy_level', 'ASC']],
         });
     }
 
@@ -130,4 +135,3 @@ class UserService {
 }
 
 export default new UserService();
-

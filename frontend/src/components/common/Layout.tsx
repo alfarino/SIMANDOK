@@ -87,24 +87,82 @@ export default function Layout() {
 
     const drawer = (
         <Box>
-            <Toolbar sx={{ bgcolor: 'rgba(0, 0, 0, 0.1)' }}>
-                <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: '#F0D323' }}>
+            {/* Logo Section */}
+            <Toolbar
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                    py: 2,
+                }}>
+                <Box
+                    sx={{
+                        width: 40,
+                        height: 40,
+                        bgcolor: 'primary.main',
+                        borderRadius: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: 700,
+                        fontSize: '1.25rem',
+                    }}>
+                    S
+                </Box>
+                <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: 'primary.main' }}>
                     SIMANDOK
                 </Typography>
             </Toolbar>
-            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+
+            {/* User Info Card */}
             {user && (
-                <Box sx={{ px: 2, py: 1.5, bgcolor: 'rgba(0, 0, 0, 0.15)' }}>
-                    <Typography variant="body2" fontWeight="bold" noWrap sx={{ color: '#FFFFFF' }}>
-                        {user.fullName}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                        {isAdmin ? '👑 Admin Sistem' : user.role?.name}
-                    </Typography>
+                <Box
+                    sx={{
+                        p: 2,
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                    }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            p: 1.5,
+                            bgcolor: 'grey.50',
+                            borderRadius: 2,
+                        }}>
+                        <Box
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                bgcolor: 'primary.main',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontWeight: 600,
+                                fontSize: '1rem',
+                            }}>
+                            {user.fullName.charAt(0).toUpperCase()}
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="body2" fontWeight={600} noWrap sx={{ color: 'text.primary' }}>
+                                {user.fullName}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                {isAdmin ? '👑 Admin Sistem' : user.role?.name}
+                            </Typography>
+                        </Box>
+                    </Box>
                 </Box>
             )}
-            <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
-            <List>
+
+            {/* Navigation Menu */}
+            <List sx={{ px: 1, py: 2 }}>
                 {menuItems.map((item) => (
                     <ListItem key={item.text} disablePadding>
                         <ListItemButton selected={location.pathname === item.path} onClick={() => navigate(item.path)}>
@@ -121,14 +179,60 @@ export default function Layout() {
         <Box sx={{ display: 'flex' }}>
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Toolbar>
-                    <IconButton color="inherit" edge="start" onClick={() => setMobileOpen(!mobileOpen)} sx={{ mr: 2, display: { sm: 'none' } }}>
+                    <IconButton
+                        color="inherit"
+                        edge="start"
+                        onClick={() => setMobileOpen(!mobileOpen)}
+                        sx={{
+                            mr: 2,
+                            display: { sm: 'none' },
+                            color: 'text.primary',
+                        }}>
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap sx={{ flexGrow: 1, color: '#FFFFFF', fontWeight: 600 }}>
-                        Sistem Manajemen Dokumen
-                    </Typography>
+
+                    {/* Logo for Header - Mobile/Desktop */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: { xs: 1, sm: 0 } }}>
+                        <Box
+                            sx={{
+                                display: { xs: 'flex', sm: 'none' },
+                                width: 32,
+                                height: 32,
+                                bgcolor: 'primary.main',
+                                borderRadius: 1.5,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontWeight: 700,
+                                fontSize: '1rem',
+                            }}>
+                            S
+                        </Box>
+                        <Typography
+                            variant="h6"
+                            noWrap
+                            sx={{
+                                display: { xs: 'none', sm: 'block' },
+                                color: 'text.primary',
+                                fontWeight: 600,
+                            }}>
+                            Sistem Manajemen Dokumen
+                        </Typography>
+                    </Box>
+
+                    <Box sx={{ flexGrow: 1 }} />
+
+                    {/* Right side actions */}
                     {!isAdmin && <NotificationBell />}
-                    <IconButton color="inherit" onClick={handleLogout}>
+                    <IconButton
+                        onClick={handleLogout}
+                        sx={{
+                            ml: 1,
+                            color: 'text.primary',
+                            '&:hover': {
+                                bgcolor: 'action.hover',
+                            },
+                        }}>
                         <Logout />
                     </IconButton>
                 </Toolbar>
