@@ -58,19 +58,34 @@ const getWorkflowColorByLevel = (hierarchyLevel: number): string => {
     return colorMap[hierarchyLevel] || '#6C757D';
 };
 
-// Color mapping untuk status chart
+// Color mapping untuk status chart - disesuaikan dengan DocumentsPage
 const getStatusColor = (status: string, hierarchyLevel?: number): string => {
     // Warna untuk status in-review berdasarkan hierarchy level
     if (status.startsWith('IN_REVIEW_LEVEL_')) {
         return hierarchyLevel ? getWorkflowColorByLevel(hierarchyLevel) : '#6C757D';
     }
 
-    // Warna untuk status lainnya
+    // Warna untuk status lainnya - mengikuti standar DocumentsPage
     const colorMap: Record<string, string> = {
-        APPROVED: APPROVED_COLOR, // #296374 - Teal
-        REJECTED: REJECTED_COLOR, // #D97706 - Oranye tua
-        DRAFT: '#9ca3af', // Abu muda untuk draft
-        DIPERIKSA: ACCENT_COLOR, // Kuning untuk sedang diperiksa
+        // success (hijau) - sama dengan Chip color="success"
+        APPROVED: '#2e7d32',
+        DISETUJUI: '#2e7d32',
+        SIAP_CETAK: '#2e7d32',
+
+        // error (merah) - sama dengan Chip color="error"
+        REJECTED: '#d32f2f',
+        DITOLAK: '#d32f2f',
+
+        // info (biru) - sama dengan Chip color="info"
+        DIBUKA: '#0288d1',
+        DIPERIKSA: '#0288d1',
+
+        // warning (oranye) - sama dengan Chip color="warning"
+        DIAJUKAN: '#ed6c02',
+
+        // default (abu-abu) - sama dengan Chip color="default"
+        DRAFT: '#616161',
+        ARCHIVED: '#616161',
     };
 
     return colorMap[status] || '#6C757D';
@@ -235,7 +250,7 @@ export default function DashboardPage() {
         <Box
             ref={containerRef}
             sx={{
-                bgcolor: isFullscreen ? '#f2f2f2' : 'transparent',
+                bgcolor: isFullscreen ? '#EDEDCE' : 'transparent',
                 p: isFullscreen ? 2.5 : 0,
                 height: isFullscreen ? '100vh' : 'auto',
                 overflow: isFullscreen ? 'hidden' : 'visible',

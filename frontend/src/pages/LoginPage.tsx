@@ -1,55 +1,52 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import {
-    Box, Typography, Container, Card, CardContent, TextField,
-    Button, Alert, CircularProgress, InputAdornment, IconButton
-} from '@mui/material'
-import { Visibility, VisibilityOff, Login } from '@mui/icons-material'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Box, Typography, Container, Card, CardContent, TextField, Button, Alert, CircularProgress, InputAdornment, IconButton } from '@mui/material';
+import { Visibility, VisibilityOff, Login } from '@mui/icons-material';
 
 export default function LoginPage() {
-    const navigate = useNavigate()
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [showPassword, setShowPassword] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
+    const navigate = useNavigate();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setError('')
+        e.preventDefault();
+        setError('');
 
         if (!email || !password) {
-            setError('Email dan password wajib diisi')
-            return
+            setError('Email dan password wajib diisi');
+            return;
         }
 
-        setLoading(true)
+        setLoading(true);
 
         try {
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            })
+                body: JSON.stringify({ email, password }),
+            });
 
-            const data = await res.json()
+            const data = await res.json();
 
             if (!res.ok) {
-                throw new Error(data.error || 'Login gagal')
+                throw new Error(data.error || 'Login gagal');
             }
 
             // Store token
-            localStorage.setItem('token', data.data.token)
-            localStorage.setItem('user', JSON.stringify(data.data.user))
+            localStorage.setItem('token', data.data.token);
+            localStorage.setItem('user', JSON.stringify(data.data.user));
 
             // Redirect to dashboard
-            navigate('/dashboard')
+            navigate('/dashboard');
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Login gagal')
+            setError(err instanceof Error ? err.message : 'Login gagal');
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     return (
         <Box
@@ -58,21 +55,20 @@ export default function LoginPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-            }}
-        >
+                background: 'linear-gradient(135deg, #00341f 0%, #004d2e 50%, #296374 100%)',
+            }}>
             <Container maxWidth="sm">
                 <Card sx={{ borderRadius: 3, boxShadow: 6 }}>
                     <CardContent sx={{ p: 4 }}>
                         <Box sx={{ textAlign: 'center', mb: 4 }}>
-                            <Typography variant="h4" fontWeight="bold" color="primary" gutterBottom>
+                            <Typography variant="h4" fontWeight="bold" sx={{ color: '#00341f' }} gutterBottom>
                                 SIMANDOK
                             </Typography>
                             <Typography variant="body1" color="text.secondary">
                                 Sistem Informasi Manajemen Dokumen
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                Direktorat Kerjasama - Universitas Andalas
+                                Direktorat Kerjasama dan Hilirisasi Riset- Universitas Andalas
                             </Typography>
                         </Box>
 
@@ -83,16 +79,7 @@ export default function LoginPage() {
                         )}
 
                         <form onSubmit={handleLogin}>
-                            <TextField
-                                fullWidth
-                                label="Email"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                sx={{ mb: 2 }}
-                                placeholder="nama@unand.ac.id"
-                                autoComplete="email"
-                            />
+                            <TextField fullWidth label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} sx={{ mb: 2 }} placeholder="nama@unand.ac.id" autoComplete="email" />
 
                             <TextField
                                 fullWidth
@@ -109,7 +96,7 @@ export default function LoginPage() {
                                                 {showPassword ? <VisibilityOff /> : <Visibility />}
                                             </IconButton>
                                         </InputAdornment>
-                                    )
+                                    ),
                                 }}
                             />
 
@@ -120,8 +107,12 @@ export default function LoginPage() {
                                 fullWidth
                                 disabled={loading}
                                 startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Login />}
-                                sx={{ py: 1.5 }}
-                            >
+                                sx={{
+                                    py: 1.5,
+                                    bgcolor: '#00341f',
+                                    '&:hover': { bgcolor: '#004d2e' },
+                                    '&:disabled': { bgcolor: '#9ca3af' },
+                                }}>
                                 {loading ? 'Masuk...' : 'Masuk'}
                             </Button>
                         </form>
@@ -135,5 +126,5 @@ export default function LoginPage() {
                 </Card>
             </Container>
         </Box>
-    )
+    );
 }
