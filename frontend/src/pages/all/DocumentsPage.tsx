@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     Box, Typography, Tabs, Tab, Paper, Table, TableBody, TableCell,
@@ -340,8 +340,8 @@ export default function DocumentsPage() {
                             </TableRow>
                         ) : (
                             filteredDocs.map((doc, index) => (
-                                <>
-                                    <TableRow key={doc.id} hover>
+                                <React.Fragment key={doc.id}>
+                                    <TableRow hover>
                                         <TableCell>{index + 1}</TableCell>
                                         <TableCell>
                                             <Typography fontWeight="medium">{doc.document_name}</Typography>
@@ -457,7 +457,7 @@ export default function DocumentsPage() {
                                             </Collapse>
                                         </TableCell>
                                     </TableRow>
-                                </>
+                                </React.Fragment>
                             ))
                         )}
                     </TableBody>

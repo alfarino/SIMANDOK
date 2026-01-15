@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Button, IconButton, CircularProgress, Alert, Collapse, Card, CardContent } from '@mui/material';
 import { OpenInNew, History, ExpandMore, ExpandLess, Refresh, CheckCircle, Cancel, AccessTime, Description, Send, Replay } from '@mui/icons-material';
@@ -238,8 +238,8 @@ export default function DokumenDiajukanPage() {
                             </TableRow>
                         ) : (
                             documents.map((doc, index) => (
-                                <>
-                                    <TableRow key={doc.id} hover>
+                                <React.Fragment key={doc.id}>
+                                    <TableRow hover>
                                         <TableCell>{index + 1}</TableCell>
                                         <TableCell>
                                             <Typography fontWeight="medium">{doc.document_name}</Typography>
@@ -348,7 +348,7 @@ export default function DokumenDiajukanPage() {
                                             </Collapse>
                                         </TableCell>
                                     </TableRow>
-                                </>
+                                </React.Fragment>
                             ))
                         )}
                     </TableBody>

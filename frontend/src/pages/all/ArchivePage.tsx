@@ -6,7 +6,7 @@ import {
     DialogActions, List, ListItem, ListItemText, Divider, Tabs, Tab
 } from '@mui/material'
 import { Restore, OpenInNew, History, Refresh, Print, CheckCircle } from '@mui/icons-material'
-import { useAppSelector } from '../store/hooks'
+import { useAppSelector } from '../../store/hooks'
 
 interface Document {
     id: number

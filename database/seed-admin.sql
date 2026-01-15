@@ -9,7 +9,7 @@ VALUES (
     'admin@unand.ac.id', 
     '$2a$10$ggkS4rvZIz75BSjj1IgEPeX8hRbErZ8lYIyD/NxYWpQjGa6IYhrFi', 
     'Administrator Sistem', 
-    4, 
+    (SELECT id FROM roles WHERE role_code = 'Z'), 
     'IT', 
     1,
     NOW(),

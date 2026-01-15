@@ -1,18 +1,27 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
-import DashboardPage from './pages/DashboardPage'
-import DocumentsPage from './pages/DocumentsPage'
-import ReviewDokumenPage from './pages/ReviewDokumenPage'
-import DokumenDiajukanPage from './pages/DokumenDiajukanPage'
-import UploadPage from './pages/UploadPage'
-import ArchivePage from './pages/ArchivePage'
-import UserManagementPage from './pages/UserManagementPage'
-import DocumentReviewPage from './pages/DocumentReviewPage'
-import ReviewHistoryPage from './pages/ReviewHistoryPage'
 import NotFoundPage from './pages/NotFoundPage'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import RoleProtectedRoute from './components/auth/RoleProtectedRoute'
+import AdminProtectedRoute from './components/auth/AdminProtectedRoute'
 import Layout from './components/common/Layout'
+
+// All users pages
+import DashboardPage from './pages/all/DashboardPage'
+import DocumentsPage from './pages/all/DocumentsPage'
+import ArchivePage from './pages/all/ArchivePage'
+import ReviewHistoryPage from './pages/all/ReviewHistoryPage'
+
+// Admin only pages
+import UserManagementPage from './pages/admin/UserManagementPage'
+
+// Staff only pages
+import UploadPage from './pages/staff/UploadPage'
+import DokumenDiajukanPage from './pages/staff/DokumenDiajukanPage'
+
+// Executive (Approver) only pages
+import ReviewDocumentsPage from './pages/executive/ReviewDocumentsPage'
+import DocumentReviewPage from './pages/executive/DocumentReviewPage'
 
 function App() {
     return (
@@ -23,12 +32,11 @@ function App() {
             {/* Protected routes - require authentication */}
             <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
-                    {/* Common routes for all roles */}
+                    {/* Common routes for all authenticated users */}
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/documents" element={<DocumentsPage />} />
                     <Route path="/archive" element={<ArchivePage />} />
-                    <Route path="/review/:id" element={<DocumentReviewPage />} />
                     <Route path="/review-history/:id" element={<ReviewHistoryPage />} />
 
                     {/* Staff-only routes (Level 1) */}
@@ -37,13 +45,16 @@ function App() {
                         <Route path="/dokumen-diajukan" element={<DokumenDiajukanPage />} />
                     </Route>
 
-                    {/* Approver-only routes (Level 2, 3, 4) */}
+                    {/* Executive/Approver-only routes (Level 2, 3, 4) */}
                     <Route element={<RoleProtectedRoute allowedLevels={[2, 3, 4]} />}>
-                        <Route path="/review-dokumen" element={<ReviewDokumenPage />} />
+                        <Route path="/review-documents" element={<ReviewDocumentsPage />} />
+                        <Route path="/review/:id" element={<DocumentReviewPage />} />
                     </Route>
 
-                    {/* Admin-only routes */}
-                    <Route path="/users" element={<UserManagementPage />} />
+                    {/* Admin-only routes (Role code Z) */}
+                    <Route element={<AdminProtectedRoute />}>
+                        <Route path="/users" element={<UserManagementPage />} />
+                    </Route>
                 </Route>
             </Route>
 

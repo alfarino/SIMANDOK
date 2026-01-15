@@ -67,6 +67,11 @@ export const requireMinLevel = (minLevel: number) => {
 
             const user = await AuthService.getUserById(req.user.userId);
 
+            // Admin (role_code Z) bypasses level check
+            if (user.role?.role_code === 'Z') {
+                return next();
+            }
+
             if (!user.role || user.role.hierarchy_level < minLevel) {
                 throw new AppError('Akses ditolak', 403, 'FORBIDDEN');
             }
@@ -76,6 +81,25 @@ export const requireMinLevel = (minLevel: number) => {
             next(error);
         }
     };
+};
+
+// Admin only (role_code Z)
+export const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.user) {
+            throw new AppError('Unauthorized', 401, 'UNAUTHORIZED');
+        }
+
+        const user = await AuthService.getUserById(req.user.userId);
+
+        if (!user.role || user.role.role_code !== 'Z') {
+            throw new AppError('Hanya Admin yang dapat mengakses', 403, 'ADMIN_ONLY');
+        }
+
+        next();
+    } catch (error) {
+        next(error);
+    }
 };
 
 // Staff only (role level 1) - for upload documents

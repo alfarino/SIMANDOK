@@ -32,7 +32,7 @@ export default function Layout() {
         }
     }, []);
 
-    const isAdmin = user?.role?.hierarchyLevel === 4 && user?.email === 'admin@unand.ac.id';
+    const isAdmin = user?.role?.code === 'Z' || user?.role?.hierarchyLevel === 0;
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -72,7 +72,7 @@ export default function Layout() {
             return [
                 { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
                 { text: 'Semua Dokumen', icon: <Description />, path: '/documents' },
-                { text: 'Review Dokumen', icon: <AssignmentInd />, path: '/review-dokumen' },
+                { text: 'Review Dokumen', icon: <AssignmentInd />, path: '/review-documents' },
                 { text: 'Arsip', icon: <Archive />, path: '/archive' },
             ];
         }
